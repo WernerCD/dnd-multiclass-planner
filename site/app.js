@@ -258,7 +258,6 @@
   function set(fn) { fn(); render(); }
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
-    if (t.id === 'themeBtn') return toggleTheme();
     if (t.dataset.ed) return set(function () { state = normalize(Object.assign({}, state, { ed: t.dataset.ed })); });
     if (t.id === 'fillBtn') return set(function () {
       var from = +$('fillFrom').value, cls = $('fillCls').value;
@@ -310,15 +309,9 @@
   });
   document.addEventListener('focusout', function (ev) { if (ev.target.dataset && ev.target.dataset.ab) render(); });
 
-  function toggleTheme() {
-    var cur = document.documentElement.dataset.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    var next = cur === 'dark' ? 'light' : 'dark';
-    document.documentElement.dataset.theme = next; store.set('mcp.theme', next);
-  }
+  // theme toggle: theme.js (shared dnd.theme key)
 
   // ---------- start ----------
-  var th = store.get('mcp.theme', null);
-  if (th === 'dark' || th === 'light') document.documentElement.dataset.theme = th;
   $('preset').innerHTML += D.PRESETS.map(function (p) { return '<option value="' + p.id + '">' + esc(p.name + ' - ' + p.ed + ' rules' + (p.exploit ? ' (exploit)' : '')) + '</option>'; }).join('');
   $('metaList').innerHTML = D.METAMAGIC.map(function (m) { return '<li><b>' + esc(m[0]) + '.</b> ' + esc(m[1]) + '</li>'; }).join('');
   state = fromQuery(location.search);
