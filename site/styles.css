@@ -271,10 +271,9 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 
 /* print: a clean build sheet (summary, milestones, notes and the level table; no controls) */
 @media print {
-  /* planner colours on paper; same selector as the shared block so a dark system preference can't win.
-     --gold/--accent/--warn/--warn-bg are not reset by shared v1.4 print, so warnings would print dark brown without this. */
+  /* planner class colours on paper; same selector as the shared print block so a dark system preference can't win */
   :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
-    --soft-bg: #f1f1f1; --pal-bg: #f5ecd2; --lock-bg: #ebe2f6; --sorc-bg: #f6dfdf; --pal: #8a6a10; --lock: #5a3290; --sorc: #a02c2e; --gold: #a8841c; --accent: #2f6b4f; --warn: #9a4b1c; --warn-bg: #f7e6d8;
+    --soft-bg: #f1f1f1; --pal-bg: #f5ecd2; --lock-bg: #ebe2f6; --sorc-bg: #f6dfdf; --pal: #8a6a10; --lock: #5a3290; --sorc: #a02c2e;
   }
   select, input[type=number], input[type=text] { appearance: none; -webkit-appearance: none; border: 0 !important; background: none !important; padding: 0 !important; min-height: 0; color: var(--ink); }
   .controls, .preset-blurb, .import-note, .order, .fill, #show, .cls-steps .step-ctl .btn, #notes2024, .notes, .about, .site-footer .foot-links { display: none !important; }
@@ -303,7 +302,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
   .lvl-table tr.cur td { background: none; }
 }
 
-/* === dnd-shared v1.4 (canonical copy: WernerCD/dnd shared/dnd-shared.css) === */
+/* === dnd-shared v1.5 (canonical copy: WernerCD/dnd shared/dnd-shared.css) === */
 /* Paste this block unchanged at the END of each site's styles.css. Do not edit it per site;
    change it in the hub repo and re-copy it to every site. It relies on the shared tokens
    (--bg, --surface, --surface-2, --ink, --ink-2, --muted, --line, --accent, --gold, --radius). */
@@ -339,11 +338,11 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 @media (max-width: 480px) { .hub-nav { gap: 10px; } .tagline { font-size: .85rem; } }
 /* print: paper-friendly, no chrome. Sites add their own rules to hide tool controls. */
 @media print {
-  :root, :root:not([data-theme="light"]), :root[data-theme="dark"] { --bg: #fff; --surface: #fff; --surface-2: #f3f3f3; --ink: #000; --ink-2: #222; --muted: #555; --line: #bbb; --shadow: none; color-scheme: light; }
+  :root, :root:not([data-theme="light"]), :root[data-theme="dark"] { --bg: #fff; --surface: #fff; --surface-2: #f3f3f3; --ink: #000; --ink-2: #222; --muted: #555; --line: #bbb; --shadow: none; --accent: #2f6b4f; --accent-ink: #ffffff; --gold: #a8841c; --warn: #9a4b1c; --warn-bg: #f7e6d8; --chip: #e6efe9; color-scheme: light; }
   body { background: #fff; }
   .hub-bar, #themeBtn, .site-footer .foot-links, button, dialog::backdrop { display: none !important; }
   .site-header { border-bottom: 1px solid #000; }
   a { color: inherit; text-decoration: none; }
   .card, .change-day li, .statblock { break-inside: avoid; }
 }
-/* === end dnd-shared v1.4 === */
+/* === end dnd-shared v1.5 === */
