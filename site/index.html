@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D&amp;D Multiclass Planner</title>
+<meta name="description" content="Plan D&D 5e Paladin, Warlock and Sorcerer multiclass builds for 2014 and 2024 rules: per-level features, multiclass spell slots, Pact Magic, spells, invocations, metamagic and presets like Sorcadin, Hexadin and Sorlock.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 5v8c0 8-5 13-12 15C9 28 4 23 4 15V7z' fill='%237a4fb0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=dev">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <div class="brand">
+      <svg class="crest" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 5v8c0 8-5 13-12 15C9 28 4 23 4 15V7z"/><path d="M16 8l2 5h5l-4 3 1.5 5L16 18l-4.5 3L13 16l-4-3h5z" fill="var(--surface)" opacity=".75"/></svg>
+      <div>
+        <h1>Multiclass Planner</h1>
+        <p class="tagline">Paladin, Warlock and Sorcerer builds for 2014 and 2024 D&amp;D 5e</p>
+      </div>
+    </div>
+    <button id="themeBtn" class="icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+    </button>
+  </div>
+</header>
+
+<section class="controls" aria-label="Build controls">
+  <div class="wrap controls-grid">
+    <div class="ctl">
+      <span class="ctl-label">Rules</span>
+      <div class="seg" role="radiogroup" aria-label="Rules edition">
+        <button type="button" role="radio" data-ed="2014">2014</button>
+        <button type="button" role="radio" data-ed="2024">2024</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <label class="ctl-label" for="preset">Preset</label>
+      <select id="preset"><option value="">Load a preset...</option></select>
+    </div>
+    <div class="ctl ctl-grow">
+      <label class="ctl-label" for="bName">Build name</label>
+      <input type="text" id="bName" maxlength="60" placeholder="My build">
+    </div>
+    <div class="ctl">
+      <label class="ctl-label" for="saved">Saved builds</label>
+      <select id="saved"><option value="">None saved</option></select>
+    </div>
+    <div class="ctl ctl-btns">
+      <button type="button" class="btn" id="saveBtn">Save</button>
+      <button type="button" class="btn" id="delBtn" title="Delete the selected saved build">Delete</button>
+      <button type="button" class="btn btn-accent" id="shareBtn">Copy share link</button>
+    </div>
+  </div>
+  <p class="wrap toast" id="toast" role="status" aria-live="polite"></p>
+</section>
+
+<main class="wrap">
+  <p class="preset-blurb" id="presetBlurb" hidden></p>
+
+  <div class="grid2">
+    <section class="card" aria-labelledby="abH">
+      <h2 id="abH">Ability scores</h2>
+      <div class="abil" id="abil"></div>
+      <div id="warn" class="warn-list"></div>
+    </section>
+
+    <section class="card" aria-labelledby="subH">
+      <h2 id="subH">Subclasses</h2>
+      <div id="subs" class="subs"></div>
+    </section>
+  </div>
+
+  <section class="card" aria-labelledby="lvH">
+    <div class="card-head">
+      <h2 id="lvH">Levels</h2>
+      <p class="split" id="split"></p>
+    </div>
+    <div class="levels" id="levels"></div>
+    <div class="fill">
+      <label for="fillFrom">Set levels</label>
+      <select id="fillFrom" aria-label="From level"></select>
+      <span>to 20 as</span>
+      <select id="fillCls" aria-label="Class"></select>
+      <button type="button" class="btn" id="fillBtn">Fill</button>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="sumH">
+    <div class="card-head">
+      <h2 id="sumH">At level <output id="showOut">20</output></h2>
+      <input type="range" id="show" min="1" max="20" value="20" aria-label="Show the build at character level">
+    </div>
+    <div class="stats" id="stats"></div>
+  </section>
+
+  <div class="grid2">
+    <section class="card" aria-labelledby="msH">
+      <h2 id="msH">Milestones</h2>
+      <ol class="ms" id="milestones"></ol>
+    </section>
+    <section class="card" aria-labelledby="cbH">
+      <h2 id="cbH">How this build combines</h2>
+      <ul class="cb" id="combine"></ul>
+    </section>
+  </div>
+
+  <section class="table-sec" aria-labelledby="tblH">
+    <h2 id="tblH">Level by level</h2>
+    <p class="muted small">Slots are from the multiclass spellcaster table. Pact Magic slots are listed on their own and never add to it. HP uses the fixed average after level 1.</p>
+    <div class="tbl-wrap">
+      <table class="lvl-table" id="table">
+        <thead><tr><th>Lvl</th><th>Class</th><th>Features</th><th>Spell slots</th><th>Pact Magic</th><th>Spells</th><th>Resources</th><th>HP</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card notes" id="notes2024" aria-labelledby="n24H">
+    <h2 id="n24H">What changed in 2024</h2>
+    <ul>
+      <li><b>Divine Smite is a spell.</b> It is a 1st-level paladin spell cast as a bonus action right after you hit with a melee weapon or unarmed strike. Because it uses your bonus action, it no longer combines with Quickened Spell or other bonus-action spells on the same turn, and you can smite only once per turn. Paladin's Smite (paladin 2) keeps it prepared and gives one free cast per long rest.</li>
+      <li><b>One spell slot per turn.</b> 2024 lets you expend only one spell slot to cast a spell on your turn, so "smite plus a leveled spell" turns are gone. The old bonus-action-spell restriction from 2014 is replaced by this rule.</li>
+      <li><b>Multiclass slots round up.</b> Paladin levels count half, rounded up, and paladins cast from level 1. A one-level paladin dip adds a caster level.</li>
+      <li><b>Subclasses at level 3.</b> Sorcerer and Warlock pick at 3 like everyone else, so a 1- or 2-level dip no longer gets a subclass (no Hexblade-style level-1 dip).</li>
+      <li><b>Pact Magic.</b> Warlocks prepare spells instead of knowing them, get an invocation at level 1, and Pact of the Blade, Chain and Tome are invocations now. Pact of the Blade lets you attack with Charisma, which replaces the old Hexblade dip. Magical Cunning (warlock 2) restores half your pact slots once per long rest. Slot counts and Mystic Arcanum are unchanged.</li>
+      <li><b>Eldritch Blast.</b> Agonizing Blast and Repelling Blast now apply to a warlock damage cantrip you choose, can be taken more than once for different cantrips, and need warlock level 2. Beams still scale with total character level, so a Sorlock keeps full blasts.</li>
+      <li><b>Sorcerer.</b> Metamagic arrives at level 2 with more options (2, 4, 6), Innate Sorcery at 1, Sorcerous Restoration at 5. Prepared spells replace spells known, with larger numbers.</li>
+      <li><b>Font of Magic.</b> Pact slots still convert into sorcery points. Slots made from points still vanish on a long rest.</li>
+      <li><b>Feats.</b> Class level 19 gives an Epic Boon feat; ASIs come at 4, 8, 12 and 16. Every character also gets an origin feat from their background.</li>
+    </ul>
+  </section>
+
+  <section class="card notes" aria-labelledby="n14H">
+    <h2 id="n14H">Rules notes</h2>
+    <ul>
+      <li><b>Prerequisites.</b> To multiclass you need the scores for both the class you are leaving and the one you are entering: Paladin Str 13 and Cha 13; Warlock Cha 13; Sorcerer Cha 13. The same in 2014 and 2024.</li>
+      <li><b>Spells per class.</b> Each class counts its own spells known or prepared, as if single-classed, and learns spells only up to the level its own class level allows. Bigger shared slots upcast those spells.</li>
+      <li><b>Extra Attack does not stack.</b> Extra Attack from two classes still means two attacks, and Thirsting Blade does not add to it.</li>
+      <li><b>2014 Divine Smite</b> is not a spell: it works after any hit, even on a turn you cast a bonus-action spell, and pact slots fuel it.</li>
+      <li><b>2014 bonus action spell rule.</b> If you cast a spell as a bonus action, the only other spell you can cast that turn is a cantrip with a 1-action casting time.</li>
+      <li><b>Coffeelock (2014 exploit).</b> Short-rest pact slots become sorcery points, points become spell slots, and those slots last until a long rest. Skip long rests and the slots pile up. It is a reading of the 2014 rules most DMs ban, and it runs into the exhaustion rules for going without sleep; treat it as a table decision, not a build.</li>
+      <li><b>Saving throws</b> come only from your first class. Later classes give the multiclass proficiencies shown in the table.</li>
+    </ul>
+    <details class="ref">
+      <summary>Metamagic options</summary>
+      <ul id="metaList"></ul>
+    </details>
+  </section>
+
+  <section class="about" id="about">
+    <h2>About</h2>
+    <p>A planner for Paladin, Warlock and Sorcerer multiclass builds. Pick the rules edition and a class for each of the 20 levels, and the table shows what you gain, your shared spell slots, Pact Magic, spells, invocations, metamagic, feats and hit points. Builds are saved in your browser, and the share link holds the whole build.</p>
+    <p>Feature and subclass descriptions on this site are short original summaries, not rules text. Subclasses from books outside the SRD (Hexblade, Divine Soul, Clockwork Soul, Oath of Vengeance and others) are listed with their name, book and level only, with a one-line summary; the full rules are in the book named.</p>
+    <p>This work includes material from the System Reference Document 5.1 and System Reference Document 5.2 by Wizards of the Coast LLC, available at <a href="https://dnd.wizards.com/resources/systems-reference-document" rel="noopener">dnd.wizards.com</a>. Both are licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" rel="noopener">Creative Commons Attribution 4.0 International License</a>. Unofficial fan content; not affiliated with or endorsed by Wizards of the Coast.</p>
+    <p><a href="https://github.com/WernerCD/dnd-multiclass-planner" rel="noopener">Source code on GitHub</a> &middot; <a href="https://github.com/WernerCD/dnd-multiclass-planner/issues" rel="noopener">Report a problem</a> &middot; Sister sites: <a href="https://wernercd.github.io/dnd-druid-wildshapes/" rel="noopener">Wild Shape Beast List</a>, <a href="https://wernercd.github.io/dnd-items/" rel="noopener">Item Finder</a></p>
+  </section>
+
+  <section class="about changelog" id="changelog">
+    <h2>Change log</h2>
+    <ol class="clog" reversed>
+      <li><time datetime="2026-11-13">2026-11-13</time> <b>Launch.</b> Paladin, Warlock and Sorcerer for 2014 and 2024 rules: a class per level, ability scores with prerequisite warnings, subclasses at the right level, multiclass spell slots with each edition's rounding, separate Pact Magic, spells, invocations, metamagic, feats, hit points, milestones, saved builds, share links and seven presets.</li>
+    </ol>
+  </section>
+</main>
+
+<script src="data.js?v=dev"></script>
+<script src="engine.js?v=dev"></script>
+<script src="app.js?v=dev"></script>
+</body>
+</html>
