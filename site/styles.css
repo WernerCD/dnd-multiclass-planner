@@ -95,7 +95,8 @@ h2 { font-size: 1.25rem; }
 .controls-grid { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: flex-end; }
 .ctl { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .ctl-grow { flex: 1 1 160px; }
-.ctl-btns { flex-direction: row; gap: 6px; flex-wrap: wrap; }
+.ctl-btns { flex-direction: row; gap: 6px; flex-wrap: wrap; flex: 1 1 100%; } /* buttons always get their own row */
+#preset, #saved { width: 14rem; max-width: 100%; text-overflow: ellipsis; } /* fixed: a long saved-build name must not reflow the bar */
 .ctl-label { font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
 input[type=text], input[type=number], select {
   font: inherit; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; min-height: 36px; max-width: 100%;
@@ -263,7 +264,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
   .grid2 { grid-template-columns: minmax(0, 1fr); }
   .controls { position: static; }
   .ctl { flex: 1 1 140px; }
-  .ctl select, .ctl input { width: 100%; }
+  .ctl select, .ctl input, #preset, #saved { width: 100%; }
   .ctl-btns { flex: 1 1 100%; }
   .card { padding: 14px; }
 }
