@@ -5,7 +5,7 @@ Plan D&D 5e **Paladin / Warlock / Sorcerer** multiclass builds for the **2014** 
 Sister sites: [Wild Shape Beast List](https://wernercd.github.io/dnd-druid-wildshapes/) and [Item Finder](https://wernercd.github.io/dnd-items/).
 
 ## Features
-- Pick the rules edition and a class for each level from 1 to 20 (or fill a range in one go).
+- Pick the rules edition, then set levels per class (0-20 each, 1-20 in total; builds can stop below 20). The level-order grid underneath sets which class is taken at each character level. Changing a count keeps the order and adds or removes that class's levels at the end.
 - Ability scores with multiclass prerequisite warnings: Paladin needs Str 13 and Cha 13; Warlock and Sorcerer need Cha 13.
 - Subclass pickers that open at the right class level (2024 moves the Sorcerer and Warlock picks to level 3), plus the 2014 Pact Boon.
 - A level-by-level table: proficiency bonus, features with short original summaries, multiclass ASIs/feats, Extra Attack (and the note that it doesn't stack), hit points.

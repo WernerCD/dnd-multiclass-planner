@@ -73,6 +73,25 @@
     <div id="importBody"></div>
   </div>
 
+  <section class="card" aria-labelledby="lvH">
+    <div class="card-head">
+      <h2 id="lvH">Class levels</h2>
+      <p class="split" id="split"></p>
+    </div>
+    <div class="cls-steps" id="clsSteps"></div>
+    <details class="order" id="orderBox" open>
+      <summary>Level order <span class="muted small">which class you take at each character level</span></summary>
+      <div class="levels" id="levels"></div>
+      <div class="fill">
+        <label for="fillFrom">Set levels</label>
+        <select id="fillFrom" aria-label="From level"></select>
+        <span id="fillTo">to 20 as</span>
+        <select id="fillCls" aria-label="Class"></select>
+        <button type="button" class="btn" id="fillBtn">Fill</button>
+      </div>
+    </details>
+  </section>
+
   <div class="grid2">
     <section class="card" aria-labelledby="abH">
       <h2 id="abH">Ability scores</h2>
@@ -85,21 +104,6 @@
       <div id="subs" class="subs"></div>
     </section>
   </div>
-
-  <section class="card" aria-labelledby="lvH">
-    <div class="card-head">
-      <h2 id="lvH">Levels</h2>
-      <p class="split" id="split"></p>
-    </div>
-    <div class="levels" id="levels"></div>
-    <div class="fill">
-      <label for="fillFrom">Set levels</label>
-      <select id="fillFrom" aria-label="From level"></select>
-      <span>to 20 as</span>
-      <select id="fillCls" aria-label="Class"></select>
-      <button type="button" class="btn" id="fillBtn">Fill</button>
-    </div>
-  </section>
 
   <section class="card" aria-labelledby="sumH">
     <div class="card-head">

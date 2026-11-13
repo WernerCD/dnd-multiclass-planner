@@ -85,12 +85,18 @@ eq('Sorlockadin warnings (none)', r.warnings.length, 0);
 var bad = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'PPPPPPSSSSSSSSSSSSSS'), ab: [10, 10, 14, 8, 10, 16], sub: { paladin: 'devotion', sorcerer: 'draconic' } });
 eq('Str 10 paladin multiclass warning', bad.warnings.filter(function (w) { return !w.soft; }).length, 1);
 
+// Builds shorter than 20 levels
+var short = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'PPPPPPSSS'), ab: [15, 10, 14, 8, 10, 16], sub: {} });
+eq('9-level build has 9 rows', short.rows.length, 9);
+eq('Pal6/Sorc3 slots (2014)', short.rows[8].slots, [4, 3, 3]);
+eq('decodeLevels keeps length', E.decodeLevels(D, 'PWS').length, 3);
+
 // D&D Beyond import
 var X = require(path.join(__dirname, '..', 'site', 'ddb.js'));
 var fx = require('fs').readFileSync(path.join(__dirname, 'fixtures', 'ddb-sample.json'), 'utf8');
 var im = X.parse(D, fx, '2024');
 eq('ddb edition from subclass names', im.ed, '2014');
-eq('ddb levels (starting class first)', E.encodeLevels(D, im.levels), 'PPWWWSSSSSSSSSSSSSSS');
+eq('ddb levels (starting class first, stops at character level)', E.encodeLevels(D, im.levels), 'PPWWWSSSS');
 eq('ddb total and show level', [im.total, im.show], [9, 9]);
 eq('ddb subclasses', im.sub, { warlock: 'hexblade', sorcerer: 'divine-soul' });
 eq('ddb ability scores (race+feat, no items)', im.ab, [14, 10, 14, 8, 10, 16]);

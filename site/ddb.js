@@ -65,9 +65,8 @@
     var levels = [];
     picked.forEach(function (p) { for (var i = 0; i < p.lv && levels.length < 20; i++) levels.push(p.id); });
     var total = levels.length;
-    while (levels.length < 20) levels.push(levels[levels.length - 1]);
     if (picked.length > 1) notices.push('D&D Beyond does not record the order you took levels, so the planner put ' + D.CLASSES[picked[0].id].name + ' first. Rearrange them under Levels.');
-    if (total < 20) notices.push('The character is level ' + total + '; levels ' + (total + 1) + '-20 continue as ' + D.CLASSES[levels[19]].name + ' for planning.');
+    if (total < 20) notices.push('The character is level ' + total + '. Add levels under Class levels to plan ahead.');
     if (skipped.length) notices.push('Skipped classes the planner does not cover yet: ' + skipped.join(', ') + '.');
 
     var sub = {};

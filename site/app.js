@@ -14,16 +14,17 @@
   var narrowMq = window.matchMedia ? matchMedia('(max-width: 520px)') : null;
 
   function presetState(p) {
-    return { ed: p.ed, levels: E.decodeLevels(D, p.lv), ab: p.ab.slice(), sub: Object.assign({}, p.sub), boon: p.boon || '', name: p.name, show: 20 };
+    return { ed: p.ed, levels: E.decodeLevels(D, p.lv), ab: p.ab.slice(), sub: Object.assign({}, p.sub), boon: p.boon || '', name: p.name, show: p.lv.length };
   }
   function clampAb(v) { v = parseInt(v, 10); return isNaN(v) ? 10 : Math.max(1, Math.min(30, v)); }
   function normalize(s) {
     var o = {
       ed: s.ed === '2024' ? '2024' : '2014',
-      levels: Array.isArray(s.levels) && s.levels.length === 20 && s.levels.every(function (x) { return D.CLASSES[x]; }) ? s.levels.slice() : E.decodeLevels(D, ''),
+      levels: Array.isArray(s.levels) && s.levels.length >= 1 && s.levels.length <= 20 && s.levels.every(function (x) { return D.CLASSES[x]; }) ? s.levels.slice() : E.decodeLevels(D, ''),
       ab: (Array.isArray(s.ab) && s.ab.length === 6 ? s.ab : [10, 10, 10, 10, 10, 10]).map(clampAb),
-      sub: {}, boon: '', name: String(s.name || '').slice(0, 60), show: Math.max(1, Math.min(20, parseInt(s.show, 10) || 20))
+      sub: {}, boon: '', name: String(s.name || '').slice(0, 60)
     };
+    o.show = Math.max(1, Math.min(o.levels.length, parseInt(s.show, 10) || o.levels.length));
     D.CLASS_ORDER.forEach(function (id) { if (s.sub && E.findSub(D, id, o.ed, s.sub[id])) o.sub[id] = s.sub[id]; });
     if (D.PACT_BOONS.some(function (b) { return b.id === s.boon; })) o.boon = s.boon;
     return o;
@@ -39,7 +40,7 @@
     if (sub.length) p.set('sub', sub.join(','));
     if (s.boon) p.set('boon', s.boon);
     if (s.name) p.set('n', s.name);
-    if (s.show !== 20) p.set('at', s.show);
+    if (s.show !== s.levels.length) p.set('at', s.show);
     return '?' + p.toString();
   }
   function fromQuery(q) {
@@ -112,7 +113,7 @@
   function renderSubs(r) {
     var html = r.used.map(function (id) {
       var c = D.CLASSES[id], e = c.ed[state.ed];
-      var at = 0; for (var i = 0, n = 0; i < 20; i++) if (state.levels[i] === id && ++n === e.subclassLevel) { at = i + 1; break; }
+      var at = 0; for (var i = 0, n = 0; i < state.levels.length; i++) if (state.levels[i] === id && ++n === e.subclassLevel) { at = i + 1; break; }
       var opts = '<option value="">Choose...</option>' + e.subclasses.map(function (s) {
         return '<option value="' + s.id + '"' + (state.sub[id] === s.id ? ' selected' : '') + '>' + esc(s.name + ' - ' + s.source) + '</option>';
       }).join('');
@@ -123,7 +124,7 @@
         '<span class="hint">' + esc(hint) + (sel && at ? ' ' + esc(sel.summary) : '') + '</span></div>';
     }).join('');
     if (state.ed === '2014' && r.counts.warlock >= 3) {
-      var at3 = 0; for (var i = 0, n = 0; i < 20; i++) if (state.levels[i] === 'warlock' && ++n === 3) { at3 = i + 1; break; }
+      var at3 = 0; for (var i = 0, n = 0; i < state.levels.length; i++) if (state.levels[i] === 'warlock' && ++n === 3) { at3 = i + 1; break; }
       html += '<div class="sub-row"><label for="boon">Warlock: Pact Boon</label><select id="boon"><option value="">Choose...</option>' +
         D.PACT_BOONS.map(function (b) { return '<option value="' + b.id + '"' + (state.boon === b.id ? ' selected' : '') + '>' + esc(b.name) + '</option>'; }).join('') +
         '</select><span class="hint">Character level ' + at3 + ' (Warlock 3).</span></div>';
@@ -135,23 +136,46 @@
 
   function renderLevels(r) {
     var wrap = $('levels');
-    var narrow = narrowMq ? narrowMq.matches : false;
-    if (!wrap.children.length || wrap.dataset.narrow !== String(narrow)) {
+    var narrow = narrowMq ? narrowMq.matches : false, len = state.levels.length;
+    if (!wrap.children.length || wrap.dataset.narrow !== String(narrow) || wrap.children.length !== len) {
       wrap.dataset.narrow = String(narrow);
       var opts = D.CLASS_ORDER.map(function (id) { var c = D.CLASSES[id]; return '<option value="' + id + '">' + esc(narrow ? c.short || c.name : c.name) + '</option>'; }).join('');
       var h = '';
-      for (var i = 0; i < 20; i++) h += '<label class="lv" id="lv' + i + '"><span>Level ' + (i + 1) + '</span><select data-lv="' + i + '" aria-label="Class at level ' + (i + 1) + '">' + opts + '</select></label>';
+      for (var i = 0; i < len; i++) h += '<label class="lv" id="lv' + i + '"><span>Level ' + (i + 1) + '</span><select data-lv="' + i + '" aria-label="Class at level ' + (i + 1) + '">' + opts + '</select></label>';
       wrap.innerHTML = h;
-      var fo = ''; for (i = 1; i <= 20; i++) fo += '<option value="' + i + '">' + i + '</option>';
+      var fo = ''; for (i = 1; i <= len; i++) fo += '<option value="' + i + '">' + i + '</option>';
       $('fillFrom').innerHTML = fo;
+      $('fillTo').textContent = 'to ' + len + ' as';
       $('fillCls').innerHTML = D.CLASS_ORDER.map(function (id) { return '<option value="' + id + '">' + esc(D.CLASSES[id].name) + '</option>'; }).join('');
     }
-    for (var j = 0; j < 20; j++) {
+    for (var j = 0; j < len; j++) {
       var cell = $('lv' + j), sel = cell.querySelector('select');
       sel.value = state.levels[j];
       cell.className = 'lv c-' + state.levels[j] + (j + 1 > state.show ? ' future' : '');
     }
-    $('split').innerHTML = splitHtml(r.rows[19].counts);
+    var last = r.rows[r.rows.length - 1].counts;
+    $('split').innerHTML = 'Level ' + len + ' / 20';
+    $('clsSteps').innerHTML = D.CLASS_ORDER.map(function (id) {
+      var c = D.CLASSES[id], n = last[id] || 0, room = 20 - len;
+      var canDown = n > 0 && !(n === len), canUp = room > 0;
+      return '<div class="step c-' + id + (n ? '' : ' zero') + '"><label for="cnt-' + id + '">' + esc(c.name) + '</label>' +
+        '<div class="step-ctl"><button type="button" class="btn" data-step="' + id + '" data-d="-1" aria-label="One less ' + esc(c.name) + ' level"' + (canDown ? '' : ' disabled') + '>&minus;</button>' +
+        '<input type="number" inputmode="numeric" min="0" max="20" id="cnt-' + id + '" data-cnt="' + id + '" value="' + n + '">' +
+        '<button type="button" class="btn" data-step="' + id + '" data-d="1" aria-label="One more ' + esc(c.name) + ' level"' + (canUp ? '' : ' disabled') + '>+</button></div></div>';
+    }).join('');
+  }
+
+  /* Change how many levels a class has. Keeps the existing order; removes that class's last levels
+     or adds new ones at the end. The total stays between 1 and 20. */
+  function setCount(id, n) {
+    var lv = state.levels, cur = lv.filter(function (x) { return x === id; }).length, others = lv.length - cur;
+    n = Math.max(others ? 0 : 1, Math.min(20 - others, isNaN(n) ? cur : n));
+    if (n === cur) return;
+    var followEnd = state.show === lv.length;
+    if (n < cur) { var drop = cur - n; for (var i = lv.length - 1; i >= 0 && drop; i--) if (lv[i] === id) { lv.splice(i, 1); drop--; } }
+    else for (var k = cur; k < n; k++) lv.push(id);
+    state.show = followEnd ? lv.length : Math.min(state.show, lv.length);
+    presetId = '';
   }
 
   function splitHtml(counts) {
@@ -192,7 +216,9 @@
   function renderSummary(r) {
     var row = r.rows[state.show - 1];
     $('showOut').textContent = state.show;
+    $('show').max = state.levels.length;
     $('show').value = state.show;
+    $('show').disabled = state.levels.length < 2;
     var asis = r.asis.filter(function (L) { return L <= state.show; });
     var stats = [
       ['Split', '<span class="split-v">' + splitHtml(row.counts) + '</span>', 'wide'],
@@ -225,7 +251,7 @@
     if (c.paladin && c.sorcerer) items.push('<li>Sorcerer slots fuel smites, and Charisma powers both classes, so one high score covers spells, Aura of Protection and (with a Cha-attack option) weapons.</li>');
     if (c.paladin && c.warlock && state.ed === '2014' && state.sub.warlock === 'hexblade') items.push('<li>Hex Warrior lets you attack with Charisma, so Strength only has to meet the 13 prerequisite.</li>');
     if (c.paladin && c.warlock && state.ed === '2024') items.push('<li>Pact of the Blade (an invocation in 2024) lets you attack with Charisma from warlock level 1.</li>');
-    if (c.warlock && c.warlock < 11 && r.rows[19].casterLevel >= 11) items.push('<li>Mystic Arcanum needs warlock 11; your 6th-level and higher spells come from the shared slots instead.</li>');
+    if (c.warlock && c.warlock < 11 && r.rows[r.rows.length - 1].casterLevel >= 11) items.push('<li>Mystic Arcanum needs warlock 11; your 6th-level and higher spells come from the shared slots instead.</li>');
     if (!items.length) items.push('<li>Single class or no special interactions in this build.</li>');
     $('combine').innerHTML = items.join('');
   }
@@ -267,7 +293,7 @@
     if (t.dataset.ed) return set(function () { state = normalize(Object.assign({}, state, { ed: t.dataset.ed })); presetId = ''; });
     if (t.id === 'fillBtn') return set(function () {
       var from = +$('fillFrom').value, cls = $('fillCls').value;
-      for (var i = from - 1; i < 20; i++) state.levels[i] = cls;
+      for (var i = from - 1; i < state.levels.length; i++) state.levels[i] = cls;
       presetId = '';
     });
     if (t.id === 'saveBtn') {
@@ -283,6 +309,7 @@
       if (!confirm('Delete the saved build "' + n + '" from this browser?')) return;
       var s2 = savedList(); delete s2[n]; store.set('mcp.builds', s2); renderSaved(''); toast('Deleted "' + n + '".'); return;
     }
+    if (t.dataset.step) return set(function () { setCount(t.dataset.step, (state.levels.filter(function (x) { return x === t.dataset.step; }).length) + (+t.dataset.d)); });
     if (t.id === 'ddbBtn') { $('ddbErr').hidden = true; $('ddbDlg').showModal(); return; }
     if (t.id === 'importClose') { $('importNote').hidden = true; return; }
     if (t.id === 'ddbGo') {
@@ -305,6 +332,7 @@
   });
   document.addEventListener('change', function (ev) {
     var t = ev.target;
+    if (t.dataset.cnt) return set(function () { setCount(t.dataset.cnt, parseInt(t.value, 10)); });
     if (t.dataset.lv) return set(function () { state.levels[+t.dataset.lv] = t.value; presetId = ''; });
     if (t.dataset.sub) return set(function () { if (t.value) state.sub[t.dataset.sub] = t.value; else delete state.sub[t.dataset.sub]; });
     if (t.id === 'boon') return set(function () { state.boon = t.value; });

@@ -82,10 +82,11 @@
   }
   function encodeLevels(D, levels) { return levels.map(function (id) { return D.CLASSES[id].code; }).join(''); }
   function decodeLevels(D, str) {
-    var m = codeMap(D), out = [];
-    for (var i = 0; i < 20; i++) out.push(m[(str || '').charAt(i).toUpperCase()] || null);
+    // one letter per character level, 1-20 levels (a build can stop before 20)
+    var m = codeMap(D), out = [], n = Math.max(1, Math.min(20, String(str || '').length));
+    for (var i = 0; i < n; i++) out.push(m[(str || '').charAt(i).toUpperCase()] || null);
     var last = null;
-    for (i = 0; i < 20; i++) { if (out[i]) last = out[i]; else out[i] = last || D.CLASS_ORDER[0]; }
+    for (i = 0; i < n; i++) { if (out[i]) last = out[i]; else out[i] = last || D.CLASS_ORDER[0]; }
     return out;
   }
 
@@ -101,7 +102,8 @@
 
     function once(key, L, text) { if (!notesSeen[key]) { notesSeen[key] = L; return text; } return null; }
 
-    for (var L = 1; L <= 20; L++) {
+    var maxL = Math.max(1, Math.min(20, build.levels.length));
+    for (var L = 1; L <= maxL; L++) {
       var id = build.levels[L - 1], cls = D.CLASSES[id], ce = cls.ed[ed];
       counts[id] += 1;
       var n = counts[id];
