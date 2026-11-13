@@ -73,6 +73,12 @@
     document.querySelectorAll('[data-ed]').forEach(function (b) { b.setAttribute('aria-checked', String(b.dataset.ed === state.ed)); });
     if (document.activeElement !== $('bName')) $('bName').value = state.name;
     $('notes2024').classList.toggle('dim', state.ed !== '2024');
+    var ps = $('preset');
+    if (ps.dataset.ed !== state.ed) {
+      ps.dataset.ed = state.ed;
+      ps.innerHTML = '<option value="">Load a ' + state.ed + ' preset...</option>' + D.PRESETS.filter(function (x) { return x.ed === state.ed; })
+        .map(function (x) { return '<option value="' + x.id + '">' + esc(x.name + (x.exploit ? ' (exploit)' : '')) + '</option>'; }).join('');
+    }
     var p = D.PRESETS.filter(function (x) { return x.id === presetId; })[0];
     var bl = $('presetBlurb');
     if (p) { bl.hidden = false; bl.className = 'preset-blurb' + (p.exploit ? ' exploit' : ''); bl.innerHTML = '<b>' + esc(p.name) + ' (' + p.ed + ' rules' + (p.exploit ? ', exploit' : '') + ').</b> ' + esc(p.blurb); }
@@ -258,7 +264,7 @@
   function set(fn) { fn(); render(); }
   document.addEventListener('click', function (ev) {
     var t = ev.target.closest('button'); if (!t) return;
-    if (t.dataset.ed) return set(function () { state = normalize(Object.assign({}, state, { ed: t.dataset.ed })); });
+    if (t.dataset.ed) return set(function () { state = normalize(Object.assign({}, state, { ed: t.dataset.ed })); presetId = ''; });
     if (t.id === 'fillBtn') return set(function () {
       var from = +$('fillFrom').value, cls = $('fillCls').value;
       for (var i = from - 1; i < 20; i++) state.levels[i] = cls;
@@ -276,6 +282,18 @@
       var n = $('saved').value; if (!n) return toast('Pick a saved build to delete first.');
       if (!confirm('Delete the saved build "' + n + '" from this browser?')) return;
       var s2 = savedList(); delete s2[n]; store.set('mcp.builds', s2); renderSaved(''); toast('Deleted "' + n + '".'); return;
+    }
+    if (t.id === 'ddbBtn') { $('ddbErr').hidden = true; $('ddbDlg').showModal(); return; }
+    if (t.id === 'importClose') { $('importNote').hidden = true; return; }
+    if (t.id === 'ddbGo') {
+      var res;
+      try { res = window.DdbImport.parse(D, $('ddbJson').value.trim(), state.ed); }
+      catch (e) { $('ddbErr').hidden = false; $('ddbErr').textContent = e instanceof SyntaxError ? 'That is not valid JSON. Copy the whole character data page and paste it again.' : e.message; return; }
+      state = normalize(res); presetId = '';
+      $('ddbDlg').close(); $('ddbJson').value = '';
+      $('importBody').innerHTML = '<p><b>Imported ' + esc(state.name) + ' (level ' + res.total + ').</b></p><ul>' + res.notices.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+      $('importNote').hidden = false;
+      render(); return;
     }
     if (t.id === 'shareBtn') {
       syncUrl();
@@ -304,6 +322,12 @@
   document.addEventListener('input', function (ev) {
     var t = ev.target;
     if (t.dataset.ab) { var v = parseInt(t.value, 10); if (!isNaN(v)) set(function () { state.ab[+t.dataset.ab] = clampAb(v); }); return; }
+    if (t.id === 'ddbLink') {
+      var id = window.DdbImport.idFromLink(t.value), a = $('ddbOpen');
+      if (id) { a.href = window.DdbImport.apiUrl(id); a.removeAttribute('aria-disabled'); a.textContent = 'the character data for #' + id; }
+      else { a.href = '#'; a.setAttribute('aria-disabled', 'true'); a.textContent = 'the character data'; }
+      return;
+    }
     if (t.id === 'bName') { state.name = t.value.slice(0, 60); syncUrl(); return; }
     if (t.id === 'show') return set(function () { state.show = +t.value; });
   });
@@ -312,7 +336,6 @@
   // theme toggle: theme.js (shared dnd.theme key)
 
   // ---------- start ----------
-  $('preset').innerHTML += D.PRESETS.map(function (p) { return '<option value="' + p.id + '">' + esc(p.name + ' - ' + p.ed + ' rules' + (p.exploit ? ' (exploit)' : '')) + '</option>'; }).join('');
   $('metaList').innerHTML = D.METAMAGIC.map(function (m) { return '<li><b>' + esc(m[0]) + '.</b> ' + esc(m[1]) + '</li>'; }).join('');
   state = fromQuery(location.search);
   if (!state) { var cur = store.get('mcp.current', null); state = cur ? normalize(cur) : null; }

@@ -85,5 +85,22 @@ eq('Sorlockadin warnings (none)', r.warnings.length, 0);
 var bad = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'PPPPPPSSSSSSSSSSSSSS'), ab: [10, 10, 14, 8, 10, 16], sub: { paladin: 'devotion', sorcerer: 'draconic' } });
 eq('Str 10 paladin multiclass warning', bad.warnings.filter(function (w) { return !w.soft; }).length, 1);
 
+// D&D Beyond import
+var X = require(path.join(__dirname, '..', 'site', 'ddb.js'));
+var fx = require('fs').readFileSync(path.join(__dirname, 'fixtures', 'ddb-sample.json'), 'utf8');
+var im = X.parse(D, fx, '2024');
+eq('ddb edition from subclass names', im.ed, '2014');
+eq('ddb levels (starting class first)', E.encodeLevels(D, im.levels), 'PPWWWSSSSSSSSSSSSSSS');
+eq('ddb total and show level', [im.total, im.show], [9, 9]);
+eq('ddb subclasses', im.sub, { warlock: 'hexblade', sorcerer: 'divine-soul' });
+eq('ddb ability scores (race+feat, no items)', im.ab, [14, 10, 14, 8, 10, 16]);
+eq('ddb skipped Fighter noted', im.notices.some(function (n) { return /Fighter 1/.test(n); }), true);
+eq('ddb link parsing', [X.idFromLink('https://www.dndbeyond.com/characters/12345678'), X.idFromLink('https://www.dndbeyond.com/profile/Someone/characters/987654'), X.idFromLink('nope')], ['12345678', '987654', null]);
+var j24 = JSON.parse(fx); j24.data.classes[0].subclassDefinition.name = 'Fiend Patron'; j24.data.classes[2].subclassDefinition.name = 'Clockwork Sorcery';
+var im24 = X.parse(D, j24, '2014');
+eq('ddb 2024 detection', [im24.ed, im24.sub], ['2024', { warlock: 'fiend', sorcerer: 'clockwork' }]);
+var threw = false; try { X.parse(D, '{"data":{"name":"x"}}'); } catch (e) { threw = true; }
+eq('ddb rejects non-character JSON', threw, true);
+
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

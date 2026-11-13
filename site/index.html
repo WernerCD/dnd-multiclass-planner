@@ -60,6 +60,7 @@
       <button type="button" class="btn" id="saveBtn">Save</button>
       <button type="button" class="btn" id="delBtn" title="Delete the selected saved build">Delete</button>
       <button type="button" class="btn btn-accent" id="shareBtn">Copy share link</button>
+      <button type="button" class="btn" id="ddbBtn">Import from D&amp;D Beyond</button>
     </div>
   </div>
   <p class="wrap toast" id="toast" role="status" aria-live="polite"></p>
@@ -67,6 +68,10 @@
 
 <main class="wrap">
   <p class="preset-blurb" id="presetBlurb" hidden></p>
+  <div class="import-note" id="importNote" hidden>
+    <button type="button" class="icon-btn close" id="importClose" aria-label="Dismiss import notes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div id="importBody"></div>
+  </div>
 
   <div class="grid2">
     <section class="card" aria-labelledby="abH">
@@ -168,6 +173,30 @@
 
 </main>
 
+<dialog id="ddbDlg" aria-labelledby="ddbH">
+  <form method="dialog" class="dlg">
+    <h2 id="ddbH">Import from D&amp;D Beyond</h2>
+    <p class="muted small">D&amp;D Beyond does not let other sites read characters directly, so this takes three quick steps. Everything is read in your browser; nothing is sent anywhere.</p>
+    <ol class="steps">
+      <li>
+        <label for="ddbLink">Paste your character's link (or its number). It needs to be public, or you signed in to D&amp;D Beyond in this browser.</label>
+        <input type="text" id="ddbLink" placeholder="https://www.dndbeyond.com/characters/12345678" autocomplete="off">
+      </li>
+      <li>Open <a id="ddbOpen" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">the character data</a> in a new tab, select everything (Ctrl+A, or Cmd+A on a Mac) and copy it.</li>
+      <li>
+        <label for="ddbJson">Paste it here.</label>
+        <textarea id="ddbJson" rows="5" spellcheck="false" placeholder='{"id":...,"success":true,"data":{...}}'></textarea>
+      </li>
+    </ol>
+    <p class="notice" id="ddbErr" hidden></p>
+    <div class="dlg-btns">
+      <button type="button" class="btn btn-accent" id="ddbGo">Import</button>
+      <button type="submit" class="btn" value="cancel">Cancel</button>
+    </div>
+    <p class="muted small">Imports Paladin, Warlock and Sorcerer levels, subclasses, ability scores and the character's name, replacing the current plan. Save the current plan first if you want to keep it.</p>
+  </form>
+</dialog>
+
 <footer class="site-footer">
   <div class="wrap">
     <ul class="foot-links">
@@ -185,6 +214,7 @@
 
 <script src="data.js?v=dev"></script>
 <script src="engine.js?v=dev"></script>
+<script src="ddb.js?v=dev"></script>
 <script src="app.js?v=dev"></script>
 <script src="theme.js?v=dev"></script>
 </body>

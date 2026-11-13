@@ -1,0 +1,11 @@
+{"id":1,"success":true,"message":"Character successfully received.","data":{"id":1,"name":"Test Sorlockadin",
+"stats":[{"id":1,"value":13},{"id":2,"value":10},{"id":3,"value":14},{"id":4,"value":8},{"id":5,"value":10},{"id":6,"value":15}],
+"bonusStats":[{"id":1,"value":null},{"id":6,"value":null}],
+"overrideStats":[{"id":1,"value":null},{"id":6,"value":null}],
+"modifiers":{"race":[{"type":"bonus","subType":"charisma-score","value":1}],"background":[],"class":[],"feat":[{"type":"bonus","subType":"strength-score","value":1}],"item":[{"type":"set","subType":"strength-score","value":19}]},
+"classes":[
+ {"level":3,"isStartingClass":false,"definition":{"name":"Warlock","sources":[{"sourceId":27}]},"subclassDefinition":{"name":"The Hexblade"}},
+ {"level":2,"isStartingClass":true,"definition":{"name":"Paladin","sources":[{"sourceId":2}]},"subclassDefinition":null},
+ {"level":4,"isStartingClass":false,"definition":{"name":"Sorcerer","sources":[{"sourceId":2}]},"subclassDefinition":{"name":"Divine Soul"}},
+ {"level":1,"isStartingClass":false,"definition":{"name":"Fighter","sources":[{"sourceId":2}]},"subclassDefinition":null}
+]}}

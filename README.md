@@ -14,7 +14,8 @@ Sister sites: [Wild Shape Beast List](https://wernercd.github.io/dnd-druid-wilds
 - Spells known or prepared per class, cantrips, highest spell level each class can learn, invocations, metamagic, sorcery points, Lay on Hands and Channel Divinity.
 - A summary at any level (slider), milestones, build-specific combination notes, a 2024 changes panel and rules notes.
 - Saved builds in the browser (`localStorage`), and the whole build in the share link: `?ed=2014&lv=PPPPPPSSSSSSSSSSSSSS&ab=15.8.14.8.10.16&sub=P.devotion,S.divine-soul`.
-- Presets: Sorcadin (2014 and 2024), Hexadin (2014 and 2024), Sorlock, Coffeelock (flagged as a 2014 exploit) and Sorlockadin.
+- Presets, listed for the selected rules only: Sorcadin (2014 and 2024), Hexadin (2014 and 2024), Sorlock, Coffeelock (flagged as a 2014 exploit) and Sorlockadin.
+- **Import from D&D Beyond.** D&D Beyond's character service sends no CORS headers, so the page can't fetch it directly. Instead the user pastes their character link, opens the generated `character-service.dndbeyond.com/character/v5/character/<id>` link (public characters, or their own while signed in), copies the JSON and pastes it back. `site/ddb.js` reads the Paladin/Warlock/Sorcerer levels (starting class first, since D&D Beyond doesn't store level order), subclasses, ability scores (base + racial/background/class/feat bonuses, no items) and name, and guesses the edition from the subclass names and the 2024 PHB source id. Nothing is sent anywhere or kept apart from the resulting build.
 
 ## Layout
 | Path | What |
@@ -22,7 +23,11 @@ Sister sites: [Wild Shape Beast List](https://wernercd.github.io/dnd-druid-wilds
 | `site/` | The static site (HTML/CSS/vanilla JS, no build step) |
 | `site/data.js` | Class data: features, tables, subclasses, presets. Add a class here (unique one-letter `code`, add it to `CLASS_ORDER`) |
 | `site/engine.js` | The rules engine (pure functions, also loaded by Node) |
-| `site/app.js` | The page: rendering, saved builds, share links, theme |
+| `site/app.js` | The page: rendering, saved builds, share links |
+| `site/ddb.js` | D&D Beyond import parser (also loaded by Node) |
+| `site/theme.js` | Shared D&D Toolbox theme toggle (`dnd.theme`) |
+| `site/changes.html` | Change log |
+| `tools/fixtures/ddb-sample.json` | Made-up D&D Beyond character used by the import checks |
 | `tools/check.js` | Spot checks of the slot math against the multiclass spellcaster table; CI runs it before deploying |
 
 Run it locally:
