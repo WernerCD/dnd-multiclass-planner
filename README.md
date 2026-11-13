@@ -1,8 +1,8 @@
-# D&D Multiclass Planner
+# Multiclass Planner
 
-Plan D&D 5e **Paladin / Warlock / Sorcerer** multiclass builds for the **2014** and **2024** rules, level by level.
+Plan D&D 5e **Paladin / Warlock / Sorcerer** multiclass builds level by level, for the **2014** and **2024** rules.
 
-Sister sites: [Wild Shape Beast List](https://wernercd.github.io/dnd-druid-wildshapes/) and [Item Finder](https://wernercd.github.io/dnd-items/).
+**Live:** https://wernercd.github.io/dnd-multiclass-planner/ · part of the [D&D Toolbox](https://wernercd.github.io/dnd/) · [Changes](https://wernercd.github.io/dnd-multiclass-planner/changes.html)
 
 ## Features
 - Pick the rules edition, then set levels per class (0-20 each, 1-20 in total; builds can stop below 20). The level-order grid underneath sets which class is taken at each character level. Changing a count keeps the order and adds or removes that class's levels at the end.
@@ -16,6 +16,10 @@ Sister sites: [Wild Shape Beast List](https://wernercd.github.io/dnd-druid-wilds
 - Saved builds in the browser (`localStorage`), and the whole build in the share link: `?ed=2014&lv=PPPPPPSSSSSSSSSSSSSS&ab=15.8.14.8.10.16&sub=P.devotion,S.divine-soul`.
 - Presets, listed for the selected rules only: Sorcadin (2014 and 2024), Hexadin (2014 and 2024), Sorlock, Coffeelock (flagged as a 2014 exploit) and Sorlockadin.
 - **Import from D&D Beyond.** D&D Beyond's character service sends no CORS headers, so the page can't fetch it directly. Instead the user pastes their character link, opens the generated `character-service.dndbeyond.com/character/v5/character/<id>` link (public characters, or their own while signed in), copies the JSON and pastes it back. `site/ddb.js` reads the Paladin/Warlock/Sorcerer levels (starting class first, since D&D Beyond doesn't store level order), subclasses, ability scores (base + racial/background/class/feat bonuses, no items) and name, and guesses the edition from the subclass names and the 2024 PHB source id. Nothing is sent anywhere or kept apart from the resulting build.
+- Print gives a clean build sheet: class levels, summary, milestones and the level table, without the controls.
+
+## Data and copyright
+The repo and site are public, so no book text is reproduced. Every feature and subclass description is a short original summary. Subclasses outside the SRD (Hexblade, Divine Soul, Clockwork Soul, Oath of Vengeance and others) are listed by name, book and level with a one-line summary only.
 
 ## Layout
 | Path | What |
@@ -27,20 +31,20 @@ Sister sites: [Wild Shape Beast List](https://wernercd.github.io/dnd-druid-wilds
 | `site/ddb.js` | D&D Beyond import parser (also loaded by Node) |
 | `site/theme.js` | Shared D&D Toolbox theme toggle (`dnd.theme`) |
 | `site/changes.html` | Change log |
+| `site/404.html` | Page-not-found page (absolute links; Pages serves it at any missing path) |
+| `site/version.js` | Shared update notice (offers a reload when a newer build is live) |
 | `tools/fixtures/ddb-sample.json` | Made-up D&D Beyond character used by the import checks |
-| `tools/check.js` | Spot checks of the slot math against the multiclass spellcaster table; CI runs it before deploying |
+| `tools/check.js` | Spot checks of the slot math against the multiclass spellcaster table, plus the D&D Beyond import |
+| `tools/check_site.py` | Shared toolbox smoke check (pages, head tags, header/footer, local links) |
 
-Run it locally:
+## Run locally
 ```bash
-node tools/check.js
 python -m http.server 8771 --directory site
 ```
-Every push to `main` runs the checks and deploys to GitHub Pages via `.github/workflows/pages.yml`, which stamps asset links (`?v=dev`) with the commit id.
-
-## Data and copyright
-The repo and site are public, so no book text is reproduced. Every feature and subclass description is a short original summary. Subclasses outside the SRD (Hexblade, Divine Soul, Clockwork Soul, Oath of Vengeance and others) are listed by name, book and level with a one-line summary only.
+Checks (CI runs the same before every deploy): `python tools/check_site.py` and `node tools/check.js`. Every push to `main` deploys to GitHub Pages via `.github/workflows/pages.yml`, which stamps asset links (`?v=dev`) with the commit id.
 
 ## Credits and license
-- This work includes material from the System Reference Document 5.1 and System Reference Document 5.2 by Wizards of the Coast LLC, available at https://dnd.wizards.com/resources/systems-reference-document. Both SRDs are licensed under the Creative Commons Attribution 4.0 International License (https://creativecommons.org/licenses/by/4.0/legalcode).
+- Code: MIT, see [LICENSE](LICENSE).
+- This work includes material from the System Reference Document 5.1 and 5.2 by Wizards of the Coast LLC, available at https://dnd.wizards.com/resources/systems-reference-document, licensed under the Creative Commons Attribution 4.0 International License (https://creativecommons.org/licenses/by/4.0/legalcode).
 - Subclass and book names from other books are © Wizards of the Coast.
 - Unofficial fan content. Not affiliated with or endorsed by Wizards of the Coast.

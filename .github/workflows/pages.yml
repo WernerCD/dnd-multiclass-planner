@@ -25,10 +25,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Check the slot math
-        run: node tools/check.js
+      - name: Check site
+        run: |
+          python tools/check_site.py
+          node tools/check.js
       - name: Cache-bust asset links with the commit id
-        run: sed -i "s/?v=dev/?v=${GITHUB_SHA::8}/g" site/index.html site/changes.html
+        run: sed -i "s/?v=dev/?v=${GITHUB_SHA::8}/g" site/*.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
