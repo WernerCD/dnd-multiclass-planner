@@ -27,6 +27,7 @@
     o.show = Math.max(1, Math.min(o.levels.length, parseInt(s.show, 10) || o.levels.length));
     D.CLASS_ORDER.forEach(function (id) { if (s.sub && E.findSub(D, id, o.ed, s.sub[id])) o.sub[id] = s.sub[id]; });
     if (D.PACT_BOONS.some(function (b) { return b.id === s.boon; })) o.boon = s.boon;
+    if (typeof s.charId === 'string' && s.charId) o.charId = s.charId;
     return o;
   }
 
@@ -54,6 +55,67 @@
   function syncUrl() {
     try { history.replaceState(null, '', location.pathname + toQuery(state)); } catch (e) { /* file:// or sandbox */ }
     store.set('mcp.current', state);
+    pushChar();
+  }
+
+  // ---------- shared character (character.js, dnd.characters) ----------
+  var C = window.DndChar || null, REPO = 'dnd-multiclass-planner', writing = false;
+  var MINE = D.CLASS_ORDER.map(function (id) { return D.CLASSES[id].name.toLowerCase(); });
+  function quietly(fn) { writing = true; try { return fn(); } finally { writing = false; } }
+  function charRecord(old) {
+    // classes this planner doesn't cover (set on another site) are kept, in the record's own order
+    var mine = E.charClasses(D, state), byCls = {}, classes = [];
+    mine.forEach(function (c) { byCls[c.cls] = c; });
+    (old ? old.classes : []).forEach(function (c) {
+      if (MINE.indexOf(c.cls) < 0) classes.push(c);
+      else if (byCls[c.cls]) { classes.push(byCls[c.cls]); delete byCls[c.cls]; }
+    });
+    mine.forEach(function (c) { if (byCls[c.cls]) classes.push(c); });
+    var links = {}; links[REPO] = toQuery(state);
+    return { id: old ? old.id : undefined, name: (state.name || '').trim() || (old && old.name) || 'My build', ed: state.ed,
+      classes: classes, ab: state.ab.slice(), links: links };
+  }
+  function pushChar() {
+    // keep the linked character up to date as the build changes
+    if (!C || !state.charId) return;
+    var old = C.get(state.charId);
+    if (!old) { delete state.charId; renderChar(); return; }
+    var rec = charRecord(old);
+    var key = function (c) { return JSON.stringify([c.name, c.ed, c.classes, c.ab, c.links[REPO]]); };
+    if (key(old) !== key(rec)) quietly(function () { C.save(rec, REPO); });
+  }
+  function stateFromChar(ch) {
+    // the planner's own link holds the full build (level order, pact boon); the shared record wins if another site changed it
+    var b = E.buildFromChar(D, ch);
+    if (!b.levels.length) return null;
+    var link = ch.links && ch.links[REPO], s = link ? fromQuery(link) : null;
+    if (!s || s.ed !== b.ed || !E.sameClasses(E.charClasses(D, s), E.charClasses(D, b))) s = normalize(b);
+    else { s.sub = b.sub; s.ab = b.ab; s = normalize(s); }
+    s.name = ch.name; s.charId = ch.id;
+    return s;
+  }
+  function loadChar(ch) {
+    var s = stateFromChar(ch);
+    if (!s) { delete state.charId; toast(ch.name + ' has no Paladin, Warlock or Sorcerer levels, so the planner kept your current build.'); return false; }
+    var skipped = E.buildFromChar(D, ch).skipped;
+    state = s; presetId = '';
+    toast(skipped.length ? 'Loaded ' + ch.name + '. The planner does not cover ' + skipped.map(function (x) { return x.charAt(0).toUpperCase() + x.slice(1); }).join(', ') + '; those levels are kept on the character.' : 'Loaded character "' + ch.name + '".');
+    return true;
+  }
+  function renderChar() {
+    var el = $('charBar');
+    if (!C) { el.innerHTML = ''; return; }
+    var ch = state.charId ? C.get(state.charId) : null;
+    if (!ch) {
+      el.innerHTML = '<span class="char-txt">Save this build as a character to use it on the other D&amp;D Toolbox sites: the Spell Planner, Item Finder and more.</span>' +
+        '<span class="char-acts"><button type="button" class="btn btn-accent" id="charBtn">Save as character</button></span>';
+      return;
+    }
+    var acts = '<a class="btn" href="' + esc(C.url('dnd-magic', ch.id)) + '">Spells for this character</a>' +
+      '<a class="btn" href="' + esc(C.url('dnd-items', ch.id)) + '">Items</a>';
+    if (ch.classes.some(function (c) { return c.cls === 'druid'; })) acts += '<a class="btn" href="' + esc(C.url('dnd-druid-wildshapes', ch.id)) + '">Wild Shape</a>';
+    el.innerHTML = '<span class="char-txt">Character <b>' + esc(ch.name) + '</b> (' + esc(C.summary(ch)) + '). Changes here update it on every D&amp;D Toolbox site.</span>' +
+      '<span class="char-acts">' + acts + '</span>';
   }
 
   // ---------- render ----------
@@ -68,6 +130,7 @@
     renderCombine(r);
     renderTable(r);
     syncUrl();
+    renderChar();
   }
 
   function renderControls() {
@@ -309,6 +372,16 @@
       if (!confirm('Delete the saved build "' + n + '" from this browser?')) return;
       var s2 = savedList(); delete s2[n]; store.set('mcp.builds', s2); renderSaved(''); toast('Deleted "' + n + '".'); return;
     }
+    if (t.id === 'charBtn') {
+      if (!C) return;
+      var cname = (state.name || '').trim() || 'My build';
+      state.name = cname;
+      var m = quietly(function () { var x = C.save(charRecord(null), REPO); C.setActive(x.id); return x; });
+      if (!m || !C.get(m.id)) return toast('Could not save: browser storage is unavailable.');
+      state.charId = m.id; render();
+      toast('Saved "' + cname + '" as a character. Edits here now update it.');
+      return;
+    }
     if (t.dataset.step) return set(function () { setCount(t.dataset.step, (state.levels.filter(function (x) { return x === t.dataset.step; }).length) + (+t.dataset.d)); });
     if (t.id === 'ddbBtn') { $('ddbErr').hidden = true; $('ddbDlg').showModal(); return; }
     if (t.id === 'importClose') { $('importNote').hidden = true; return; }
@@ -344,7 +417,15 @@
     }
     if (t.id === 'saved') {
       var s = savedList()[t.value];
-      if (s) { set(function () { state = normalize(s); presetId = ''; }); toast('Loaded "' + t.value + '".'); }
+      if (s) {
+        set(function () {
+          state = normalize(s); presetId = '';
+          // a saved build linked to a character makes that character active again
+          if (state.charId && C && C.get(state.charId)) quietly(function () { C.setActive(state.charId); });
+          else delete state.charId;
+        });
+        toast('Loaded "' + t.value + '".');
+      }
     }
   });
   document.addEventListener('input', function (ev) {
@@ -365,10 +446,28 @@
 
   // ---------- start ----------
   $('metaList').innerHTML = D.METAMAGIC.map(function (m) { return '<li><b>' + esc(m[0]) + '.</b> ' + esc(m[1]) + '</li>'; }).join('');
-  state = fromQuery(location.search);
+  state = fromQuery(location.search); // a share link wins
+  var act = C && C.active();
+  var fromAct = act && stateFromChar(act);
+  if (state && fromAct && toQuery(state) === toQuery(fromAct)) state.charId = act.id; // a reload keeps the link
+  if (!state && fromAct) state = fromAct; // the active character (also set by ?char=)
   if (!state) { var cur = store.get('mcp.current', null); state = cur ? normalize(cur) : null; }
+  if (state && state.charId && !(fromAct && act.id === state.charId)) delete state.charId;
   if (!state) { state = presetState(D.PRESETS[0]); presetId = D.PRESETS[0].id; }
   renderSaved('');
   render();
+  if (C) C.onChange(function (active) {
+    if (writing) return;
+    if (!active) { if (state.charId) { delete state.charId; render(); } return; }
+    if (active.id === state.charId) {
+      // edited on another site or in another tab: follow it
+      var s = stateFromChar(active);
+      if (!s) { delete state.charId; render(); } // no planner classes left on it: stop writing to it
+      else if (toQuery(s) !== toQuery(state)) { state = s; render(); }
+      else renderChar();
+      return;
+    }
+    loadChar(active); render();
+  });
   if (narrowMq) { try { narrowMq.addEventListener('change', render); } catch (e) { /* old Safari */ } }
 })();

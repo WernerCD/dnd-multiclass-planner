@@ -108,5 +108,19 @@ eq('ddb 2024 detection', [im24.ed, im24.sub], ['2024', { warlock: 'fiend', sorce
 var threw = false; try { X.parse(D, '{"data":{"name":"x"}}'); } catch (e) { threw = true; }
 eq('ddb rejects non-character JSON', threw, true);
 
+
+// ---------- shared characters (character.js) ----------
+var cb = { ed: '2014', levels: E.decodeLevels(D, 'PPWWWSSSSPP'), sub: { paladin: 'devotion', warlock: 'hexblade' } };
+var hexName = D.CLASSES.warlock.ed['2014'].subclasses.filter(function (s) { return s.id === 'hexblade'; })[0].name;
+eq('character classes in first-taken order', E.charClasses(D, cb), [
+  { cls: 'paladin', lvl: 4, sub: 'devotion', subName: 'Oath of Devotion' },
+  { cls: 'warlock', lvl: 3, sub: 'hexblade', subName: hexName },
+  { cls: 'sorcerer', lvl: 4, sub: null, subName: null }]);
+var fc = E.buildFromChar(D, { name: 'Aric', ed: '2024', ab: [15, 10, 14, 8, 10, 16], classes: [
+  { cls: 'sorcerer', lvl: 3, sub: 'x-other-site-id', subName: 'Clockwork Sorcery' }, { cls: 'druid', lvl: 2 }, { cls: 'paladin', lvl: 2, sub: null, subName: null }] });
+eq('character -> build: levels in class order, unknown classes skipped', [E.encodeLevels(D, fc.levels), fc.skipped, fc.show], ['SSSPP', ['druid 2'], 5]);
+eq('character -> build: subclass matched by name when ids differ', fc.sub, { sorcerer: 'clockwork' });
+eq('character round trip', E.charClasses(D, E.buildFromChar(D, { ed: '2014', classes: E.charClasses(D, cb) })), E.charClasses(D, cb));
+eq('sameClasses ignores class order', [E.sameClasses([{ cls: 'a', lvl: 1 }, { cls: 'b', lvl: 2 }], [{ cls: 'b', lvl: 2 }, { cls: 'a', lvl: 1 }]), E.sameClasses([{ cls: 'a', lvl: 1 }], [{ cls: 'a', lvl: 2 }])], [true, false]);
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

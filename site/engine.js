@@ -255,11 +255,50 @@
     return { ed: ed, rows: rows, counts: counts, used: used, warnings: warnings, milestones: milestones, asis: asis, first: first, ab: ab };
   }
 
+  // ---------- shared characters (dnd.characters, see character.js) ----------
+  // Subclass names as the shared matcher compares them (same rules as DndChar.sameSub)
+  function subKey(s) {
+    return String(s || '').toLowerCase().replace(/\(.*?\)/g, '')
+      .replace(/^(the|oath of( the)?|circle of( the)?|college of|path of( the)?|way of( the)?|school of|domain of|order of( the)?)\s+/, '')
+      .replace(/\s+(domain|patron|bloodline|sorcery|soul|archetype|conclave|tradition|magic)$/, '')
+      .replace(/[^a-z0-9]+/g, ' ').trim();
+  }
+  // build -> shared classes [{cls, lvl, sub, subName}], in the order the classes were first taken
+  function charClasses(D, build) {
+    var order = [], counts = {};
+    build.levels.forEach(function (id) { if (!counts[id]) { counts[id] = 0; order.push(id); } counts[id]++; });
+    return order.map(function (id) {
+      var s = findSub(D, id, build.ed, build.sub && build.sub[id]);
+      return { cls: D.CLASSES[id].name.toLowerCase(), lvl: counts[id], sub: s ? s.id : null, subName: s ? s.name : null };
+    });
+  }
+  // shared character -> planner build (levels in class order, unknown classes left out and reported)
+  function buildFromChar(D, ch) {
+    var ed = ch.ed === '2014' ? '2014' : '2024', byName = {}, levels = [], sub = {}, skipped = [];
+    D.CLASS_ORDER.forEach(function (id) { byName[D.CLASSES[id].name.toLowerCase()] = id; });
+    (ch.classes || []).forEach(function (c) {
+      var id = byName[String(c.cls || '').toLowerCase()];
+      if (!id) { skipped.push(c.cls + ' ' + c.lvl); return; }
+      for (var i = 0; i < c.lvl && levels.length < 20; i++) levels.push(id);
+      var list = D.CLASSES[id].ed[ed].subclasses, hit = null;
+      list.forEach(function (s) { if (!hit && c.sub && s.id === c.sub) hit = s; });
+      list.forEach(function (s) { if (!hit && subKey(c.subName || c.sub) && subKey(s.name) === subKey(c.subName || c.sub)) hit = s; });
+      if (hit) sub[id] = hit.id;
+    });
+    return { ed: ed, levels: levels, ab: (ch.ab || []).slice(), sub: sub, name: ch.name || '', show: levels.length, skipped: skipped };
+  }
+  // same classes and levels (order of classes ignored)?
+  function sameClasses(a, b) {
+    var k = function (l) { return l.map(function (c) { return c.cls + ':' + c.lvl; }).sort().join(','); };
+    return k(a) === k(b);
+  }
+
   var API = {
     MC_TABLE: MC_TABLE, ABIL: ABIL, ABIL_NAME: ABIL_NAME, ORD: ORD,
     mod: mod, profBonus: profBonus, casterLevel: casterLevel, slotsForCasterLevel: slotsForCasterLevel,
     pactAt: pactAt, maxSpellLevel: maxSpellLevel, compute: compute, findSub: findSub,
-    encodeLevels: encodeLevels, decodeLevels: decodeLevels
+    encodeLevels: encodeLevels, decodeLevels: decodeLevels,
+    charClasses: charClasses, buildFromChar: buildFromChar, sameClasses: sameClasses
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.PlannerEngine = API;

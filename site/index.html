@@ -25,6 +25,7 @@
 <header class="site-header">
   <div class="wrap hub-bar">
     <a href="https://wernercd.github.io/dnd/">&larr; D&amp;D Toolbox</a>
+    <span class="char-pick" id="charPick"></span>
     <nav class="hub-nav" aria-label="Site">
       <a href="./" aria-current="page">Tool</a>
       <a href="changes.html">Changes</a>
@@ -77,6 +78,7 @@
 
 <main class="wrap">
   <p class="preset-blurb" id="presetBlurb" hidden></p>
+  <div class="char-bar" id="charBar" aria-live="polite"></div>
   <div class="import-note" id="importNote" hidden>
     <button type="button" class="icon-btn close" id="importClose" aria-label="Dismiss import notes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <div id="importBody"></div>
@@ -229,6 +231,7 @@
 <script src="data.js?v=dev"></script>
 <script src="engine.js?v=dev"></script>
 <script src="ddb.js?v=dev"></script>
+<script src="character.js?v=dev"></script>
 <script src="app.js?v=dev"></script>
 <script src="theme.js?v=dev"></script>
 <script src="version.js?v=dev"></script>

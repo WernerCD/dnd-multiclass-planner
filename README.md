@@ -16,6 +16,7 @@ Plan D&D 5e **Paladin / Warlock / Sorcerer** multiclass builds level by level, f
 - Saved builds in the browser (`localStorage`), and the whole build in the share link: `?ed=2014&lv=PPPPPPSSSSSSSSSSSSSS&ab=15.8.14.8.10.16&sub=P.devotion,S.divine-soul`.
 - Presets, listed for the selected rules only: Sorcadin (2014 and 2024), Hexadin (2014 and 2024), Sorlock, Coffeelock (flagged as a 2014 exploit) and Sorlockadin.
 - **Import from D&D Beyond.** D&D Beyond's character service sends no CORS headers, so the page can't fetch it directly. Instead the user pastes their character link, opens the generated `character-service.dndbeyond.com/character/v5/character/<id>` link (public characters, or their own while signed in), copies the JSON and pastes it back. `site/ddb.js` reads the Paladin/Warlock/Sorcerer levels (starting class first, since D&D Beyond doesn't store level order), subclasses, ability scores (base + racial/background/class/feat bonuses, no items) and name, and guesses the edition from the subclass names and the 2024 PHB source id. Nothing is sent anywhere or kept apart from the resulting build.
+- **Shared characters** (`site/character.js`, the shared D&D Toolbox store `dnd.characters`). "Save as character" turns the build into a character (name, rules, classes with levels and subclasses in the order first taken, ability scores) with the full planner link under `links['dnd-multiclass-planner']`. The build stays linked (`charId`), so edits update the same character, and classes the planner doesn't cover are kept. Picking a character in the header, or arriving with `?char=<id>`, loads it. Buttons hand it to the Spell Planner and Item Finder (and Wild Shape when it has druid levels).
 - Print gives a clean build sheet: class levels, summary, milestones and the level table, without the controls.
 
 ## Data and copyright
@@ -32,9 +33,10 @@ The repo and site are public, so no book text is reproduced. Every feature and s
 | `site/theme.js` | Shared D&D Toolbox theme toggle (`dnd.theme`) |
 | `site/changes.html` | Change log |
 | `site/404.html` | Page-not-found page (absolute links; Pages serves it at any missing path) |
+| `site/character.js` | Shared characters across the D&D Toolbox sites (header switcher, `dnd.characters`) |
 | `site/version.js` | Shared update notice (offers a reload when a newer build is live) |
 | `tools/fixtures/ddb-sample.json` | Made-up D&D Beyond character used by the import checks |
-| `tools/check.js` | Spot checks of the slot math against the multiclass spellcaster table, plus the D&D Beyond import |
+| `tools/check.js` | Spot checks of the slot math against the multiclass spellcaster table, the D&D Beyond import and the character conversion |
 | `tools/check_site.py` | Shared toolbox smoke check (pages, head tags, header/footer, local links) |
 
 ## Run locally

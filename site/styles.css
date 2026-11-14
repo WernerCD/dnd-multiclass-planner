@@ -122,6 +122,11 @@ main { padding-bottom: 40px; }
 .preset-blurb.exploit { background: var(--warn-bg); }
 
 /* import */
+.char-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 14px 0 0; padding: 10px 14px; border-radius: 10px; background: var(--soft-bg); font-size: .92rem; }
+.char-bar:empty { display: none; }
+.char-bar .char-txt { flex: 1 1 18rem; }
+.char-bar .char-acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.char-bar a.btn { display: inline-flex; align-items: center; text-decoration: none; }
 .import-note { position: relative; margin: 14px 0 0; padding: 10px 44px 10px 14px; border-radius: 10px; background: var(--soft-bg); font-size: .92rem; }
 .import-note p { margin: 0; }
 .import-note ul { margin: 6px 0 0; padding-left: 18px; color: var(--ink-2); }
@@ -276,7 +281,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
     --soft-bg: #f1f1f1; --pal-bg: #f5ecd2; --lock-bg: #ebe2f6; --sorc-bg: #f6dfdf; --pal: #8a6a10; --lock: #5a3290; --sorc: #a02c2e;
   }
   select, input[type=number], input[type=text] { appearance: none; -webkit-appearance: none; border: 0 !important; background: none !important; padding: 0 !important; min-height: 0; color: var(--ink); }
-  .controls, .preset-blurb, .import-note, .order, .fill, #show, .cls-steps .step-ctl .btn, #notes2024, .notes, .about, .site-footer .foot-links { display: none !important; }
+  .controls, .preset-blurb, .char-bar, .import-note, .order, .fill, #show, .cls-steps .step-ctl .btn, #notes2024, .notes, .about, .site-footer .foot-links { display: none !important; }
   .grid2 { display: block; }
   .card, .tbl-wrap { box-shadow: none; }
   .cls-steps { grid-template-columns: repeat(3, 1fr); }
@@ -302,7 +307,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
   .lvl-table tr.cur td { background: none; }
 }
 
-/* === dnd-shared v1.5 (canonical copy: WernerCD/dnd shared/dnd-shared.css) === */
+/* === dnd-shared v1.6 (canonical copy: WernerCD/dnd shared/dnd-shared.css) === */
 /* Paste this block unchanged at the END of each site's styles.css. Do not edit it per site;
    change it in the hub repo and re-copy it to every site. It relies on the shared tokens
    (--bg, --surface, --surface-2, --ink, --ink-2, --muted, --line, --accent, --gold, --radius). */
@@ -312,6 +317,10 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 .hub-bar a:hover, .hub-bar a:focus-visible { color: var(--accent); text-decoration: underline; }
 .hub-bar a[aria-current="page"] { color: var(--ink); }
 .hub-nav { display: flex; gap: 14px; }
+.char-pick { margin-left: auto; display: inline-flex; align-items: center; min-height: 24px; color: var(--muted); }
+.char-pick label { display: inline-flex; align-items: center; gap: 6px; }
+.char-pick select { font: inherit; font-size: .85rem; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; min-height: 26px; max-width: 46vw; }
+@media (max-width: 520px) { .char-pick .char-lbl { display: none; } }
 .hub-bar + .header-inner { padding-top: 8px; }
 .header-inner { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 18px; padding-bottom: 18px; }
 .brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -340,9 +349,9 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 @media print {
   :root, :root:not([data-theme="light"]), :root[data-theme="dark"] { --bg: #fff; --surface: #fff; --surface-2: #f3f3f3; --ink: #000; --ink-2: #222; --muted: #555; --line: #bbb; --shadow: none; --accent: #2f6b4f; --accent-ink: #ffffff; --gold: #a8841c; --warn: #9a4b1c; --warn-bg: #f7e6d8; --chip: #e6efe9; color-scheme: light; }
   body { background: #fff; }
-  .hub-bar, #themeBtn, .site-footer .foot-links, button, dialog::backdrop { display: none !important; }
+  .hub-bar, .char-pick, #themeBtn, .site-footer .foot-links, button, dialog::backdrop { display: none !important; }
   .site-header { border-bottom: 1px solid #000; }
   a { color: inherit; text-decoration: none; }
   .card, .change-day li, .statblock { break-inside: avoid; }
 }
-/* === end dnd-shared v1.5 === */
+/* === end dnd-shared v1.6 === */
