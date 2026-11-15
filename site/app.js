@@ -104,7 +104,7 @@
 
   // ---------- shared character (character.js, dnd.characters; syncing rules in STYLE.md 6c) ----------
   var C = window.DndChar || null, REPO = 'dnd-multiclass-planner', writing = false;
-  var pushTimer = null, lastKey = null, conflict = false, cleanKey = '', charHtml = null;
+  var pushTimer = null, lastKey = null, conflict = false, cleanKey = '', charHtml = null, pendingShare = null;
   function quietly(fn) { writing = true; try { return fn(); } finally { writing = false; } }
   // the shared fields the planner reads; a change to anything else (updated, other sites' links) is ignored
   function fieldsKey(ch) {
@@ -132,13 +132,14 @@
       classes: classes, ab: state.ab.slice(), links: links };
   }
   // shared saves wait for a pause in editing
+  function waiting() { return conflict || !!(pendingShare && pendingShare.id === state.charId); }
   function schedulePush() {
-    if (!C || !state.charId || conflict) return;
+    if (!C || !state.charId || waiting()) return;
     clearTimeout(pushTimer); pushTimer = setTimeout(pushNow, 500);
   }
   function pushNow() {
     clearTimeout(pushTimer); pushTimer = null;
-    if (!C || !state.charId || conflict) return;
+    if (!C || !state.charId || waiting()) return;
     var old = C.get(state.charId);
     if (!old) { delete state.charId; renderChar(); return; } // deleted elsewhere: drop the link quietly
     var rec = charRecord(old);
@@ -146,12 +147,33 @@
       var m = quietly(function () { return C.save(rec, REPO); });
       lastKey = fieldsKey(m || rec);
     } else lastKey = fieldsKey(old);
+    shareBuild(old.id);
   }
-  function stateFromChar(ch) {
+  // what this character's share links (#dndchar=) carry for the planner: the full build query
+  function shareBuild(id) { if (C && C.setShare) quietly(function () { C.setShare(id, REPO, toQuery(state)); }); }
+  /* A share link that was accepted brings the sender's build in the character's inbox. Load it as the linked build
+     when this browser has none for that character (or the same one) and nothing unsaved would be lost; otherwise ask. */
+  function handleInbox(ch) {
+    if (!C || !C.takeInbox || !ch) return false;
+    var q = quietly(function () { return C.takeInbox(ch.id, REPO); });
+    if (typeof q !== 'string' || !q) return false;
+    var s = stateFromChar(ch, q.charAt(0) === '?' ? q : '?' + q);
+    if (!s) return false;
+    var linkedHere = state.charId === ch.id, link = ch.links && ch.links[REPO];
+    var own = linkedHere ? state : link ? fromQuery(link) : null;
+    if (linkedHere && sameBuild(s, state)) return true; // already showing it
+    var unsaved = linkedHere ? !!(pushTimer || conflict) : isDirty();
+    var differs = own && !sameBuild(own, s);
+    if (!unsaved && !differs) { applyChar(ch, s); toast('Loaded the Multiclass Planner build that came with ' + ch.name + '.'); return true; }
+    pendingShare = { id: ch.id, s: s };
+    return true;
+  }
+
+  function stateFromChar(ch, linkOverride) {
     // the planner's own link holds the full build (level order, pact boon); the shared record wins where it differs
     var b = E.buildFromChar(D, ch);
     if (!b.levels.length) return null;
-    var link = ch.links && ch.links[REPO], s = link ? fromQuery(link) : null;
+    var link = linkOverride || (ch.links && ch.links[REPO]), s = link ? fromQuery(link) : null;
     if (!s || s.ed !== b.ed || !E.sameClasses(E.charClasses(D, s), E.charClasses(D, b))) s = normalize(b);
     else { s.sub = b.sub; s.otherSub = b.otherSub; s.ab = b.ab; s.other = b.other; s.otherFirst = b.otherFirst; s = normalize(s); }
     s.name = ch.name; s.charId = ch.id;
@@ -173,16 +195,30 @@
     toast('Loaded character "' + ch.name + '".' + (s.other.length ? ' Its ' + s.other.map(function (o) { return otherName(o.cls) + ' ' + o.lvl; }).join(' and ') + ' levels are locked here.' : ''));
     return true;
   }
+  function splitText(s) {
+    var n = {}; s.levels.forEach(function (id) { n[id] = (n[id] || 0) + 1; });
+    var mine = D.CLASS_ORDER.filter(function (id) { return n[id]; }).map(function (id) { return D.CLASSES[id].name + ' ' + n[id]; });
+    var oth = s.other.map(function (o) { return otherName(o.cls) + ' ' + o.lvl; });
+    return (s.otherFirst ? oth.concat(mine) : mine.concat(oth)).join(' / ');
+  }
   function charBarHtml() {
     if (!C) return '';
     var ch = state.charId ? C.get(state.charId) : null, act = C.active();
+    var ps = pendingShare && C.get(pendingShare.id);
+    if (ps) {
+      return '<span class="char-txt"><b>' + esc(ps.name) + '</b> was shared with you with its own Multiclass Planner build (' + esc(splitText(pendingShare.s)) + '), which differs from ' +
+        (state.charId === ps.id ? 'the build here' : 'your current build') + '.</span>' +
+        '<span class="char-acts"><button type="button" class="btn btn-accent" data-share="load">Load the shared build</button>' +
+        '<button type="button" class="btn" data-share="keep">Keep mine</button></span>';
+    }
     if (ch && conflict) {
       return '<span class="char-txt"><b>' + esc(ch.name) + '</b> was changed on another site or in another tab while you were editing here.</span>' +
         '<span class="char-acts"><button type="button" class="btn btn-accent" data-char="theirs">Load its version</button>' +
         '<button type="button" class="btn" data-char="mine">Keep mine</button></span>';
     }
     if (ch) {
-      var acts = '<a class="btn" href="' + esc(C.url('dnd-magic', ch.id)) + '">Spells for this character</a>' +
+      var acts = (C.copyShare ? '<button type="button" class="btn" id="charShare" title="Copy a link that adds this character, with this build, in another browser">Share character</button>' : '') +
+        '<a class="btn" href="' + esc(C.url('dnd-magic', ch.id)) + '">Spells for this character</a>' +
         '<a class="btn" href="' + esc(C.url('dnd-items', ch.id)) + '">Items</a>';
       if (ch.classes.some(function (c) { return c.cls === 'druid'; })) acts += '<a class="btn" href="' + esc(C.url('dnd-druid-wildshapes', ch.id)) + '">Wild Shape</a>';
       return '<span class="char-txt">Character <b>' + esc(ch.name) + '</b> (' + esc(C.summary(ch)) + '). Changes here update it on every D&amp;D Toolbox site.</span>' +
@@ -502,6 +538,16 @@
       else { conflict = false; delete state.charId; render(); }
       return;
     }
+    if (t.dataset.share) {
+      var pend = pendingShare, pc = pend && C.get(pend.id); pendingShare = null; conflict = false;
+      if (pc && t.dataset.share === 'load') {
+        if (state.charId && state.charId !== pc.id) pushNow();
+        applyChar(pc, pend.s); quietly(function () { C.setActive(pc.id); }); render(); pushNow();
+        toast('Loaded the shared build for ' + pc.name + '.');
+      } else { if (state.charId) pushNow(); renderChar(); toast('Kept your build.'); }
+      return;
+    }
+    if (t.id === 'charShare') { pushNow(); var sc = C.get(state.charId); if (sc) C.copyShare(sc, REPO, t); return; }
     if (t.dataset.char === 'mine') { conflict = false; pushNow(); renderChar(); toast('Kept your version; it is saved to the character.'); return;
     }
     if (t.id === 'charBtn') {
@@ -510,7 +556,7 @@
       state.name = cname;
       var m = quietly(function () { var x = C.save(charRecord(null), REPO); C.setActive(x.id); return x; });
       if (!m || !C.get(m.id)) return toast('Could not save: browser storage is unavailable.');
-      state.charId = m.id; lastKey = fieldsKey(m); conflict = false; cleanKey = toQuery(state); render();
+      state.charId = m.id; lastKey = fieldsKey(m); conflict = false; cleanKey = toQuery(state); shareBuild(m.id); render();
       toast('Saved "' + cname + '" as a character. Edits here now update it.');
       return;
     }
@@ -626,6 +672,7 @@
   cleanKey = restored && !state.charId ? '' : toQuery(state); // a restored, unsaved build counts as work to protect
   renderSaved('');
   render();
+  if (act && handleInbox(act)) render();
   // ?char=<id> for a character this browser doesn't have (character.js already removed it from the address)
   try {
     var nav = performance.getEntriesByType('navigation')[0], want = nav && new URL(nav.name).searchParams.get('char');
@@ -633,6 +680,8 @@
   } catch (e) { /* old browser */ }
   if (C) C.onChange(function (active) {
     if (writing) return;
+    if (active && handleInbox(active)) { render(); return; } // a share link was just accepted
+    if (active && pendingShare && pendingShare.id === active.id) { renderChar(); return; }
     if (!active) {
       // no character selected (or it was deleted): keep the build, drop the link
       // (a pending edit is saved first; DndChar.save() selects a character when none is, so clear it again)
