@@ -55,6 +55,7 @@
 }
 /* planner-only tokens (class colours, soft panels) */
 :root {
+  --muted: #5c665f; /* darker than the shared light value, for 4.5:1 on the soft panels (dark mode keeps the shared value) */
   --soft-bg: #e6efe9;
   --pal: #a8841c; --pal-bg: #f5ecd2;
   --lock: #6a3fa0; --lock-bg: #ebe2f6;
@@ -185,6 +186,16 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 .lv.c-warlock, .tag.c-warlock { border-left-color: var(--lock); }
 .lv.c-sorcerer, .tag.c-sorcerer { border-left-color: var(--sorc); }
 .lv.future { opacity: .6; }
+.lv.locked { border-left-color: var(--muted); border-style: dashed; border-left-style: solid; background: var(--surface-2); }
+.lv.locked b { font-size: .85rem; font-weight: 600; padding: 6px 2px; min-height: 32px; }
+.step.locked { border-left-color: var(--muted); border-style: dashed; border-left-style: solid; }
+.step .step-name { font-weight: 600; }
+.step .lock-n { font-weight: 600; padding: 0 8px; }
+.step .lock-n small { font-weight: 400; color: var(--muted); }
+.step-ctl .btn[data-rmother] { width: auto; padding: 0 10px; font-size: .85rem; }
+.tag.c-other { border-left-color: var(--muted); }
+.split .c-other { color: var(--ink-2); }
+.feat.locked { color: var(--ink-2); }
 .fill { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; font-size: .9rem; color: var(--ink-2); }
 .split .c-paladin { color: var(--pal); } .split .c-warlock { color: var(--lock); } .split .c-sorcerer { color: var(--sorc); }
 

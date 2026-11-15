@@ -13,6 +13,8 @@
       .replace(/[^a-z]+/g, ' ').trim();
   }
 
+  // ddb.ac short links redirect on D&D Beyond's side; the page can't follow them without a proxy
+  function isShortLink(text) { return /(^|\/\/|\s)(www\.)?ddb\.ac\//i.test(String(text || '')); }
   function idFromLink(text) {
     var m = String(text || '').match(/dndbeyond\.com\/(?:profile\/[^/]+\/)?characters\/(\d+)/i) || String(text || '').match(/^\s*(\d{4,})\s*$/);
     return m ? m[1] : null;
@@ -42,12 +44,16 @@
     if (!c || !Array.isArray(c.classes)) throw new Error('That does not look like D&D Beyond character data. Copy the whole page from the character data link.');
 
     var byName = {}; D.CLASS_ORDER.forEach(function (id) { byName[D.CLASSES[id].name.toLowerCase()] = id; });
-    var notices = [], votes = { '2014': 0, '2024': 0 }, picked = [], skipped = [];
+    var notices = [], votes = { '2014': 0, '2024': 0 }, picked = [], others = [];
 
     c.classes.forEach(function (k) {
       var def = k.definition || {}, name = String(def.name || '').trim(), id = byName[name.toLowerCase()];
       var lv = +k.level || 0;
-      if (!id) { skipped.push(name + ' ' + lv); return; }
+      if (!id) {
+        // a class the planner doesn't model: kept as locked levels so the level, proficiency and saves stay right
+        if (name && lv) others.push({ cls: name.toLowerCase(), lvl: lv, sub: null, subName: (k.subclassDefinition && k.subclassDefinition.name) || null, start: !!k.isStartingClass, label: name + ' ' + lv });
+        return;
+      }
       (def.sources || []).forEach(function (s) { if (ED2024_SOURCES.indexOf(s.sourceId) >= 0) votes['2024'] += 2; });
       var subName = k.subclassDefinition && k.subclassDefinition.name;
       if (subName) ['2014', '2024'].forEach(function (ed) {
@@ -55,35 +61,41 @@
       });
       picked.push({ id: id, lv: lv, start: !!k.isStartingClass, sub: subName });
     });
-    if (!picked.length) throw new Error('No Paladin, Warlock or Sorcerer levels found' + (skipped.length ? ' (found ' + skipped.join(', ') + ')' : '') + '.');
+    if (!picked.length) throw new Error('No Paladin, Warlock or Sorcerer levels found' + (others.length ? ' (found ' + others.map(function (o) { return o.label; }).join(', ') + ')' : '') + '.');
 
     var ed = votes['2024'] > votes['2014'] ? '2024' : votes['2014'] > votes['2024'] ? '2014' : (currentEd || '2014');
     notices.push(votes['2024'] === votes['2014'] ? 'Could not tell which rules the character uses; kept ' + ed + '. Switch Rules if that is wrong.' : 'Rules set to ' + ed + ' from the class and subclass versions on the sheet.');
 
-    // order: starting class first, then the rest in sheet order
-    picked.sort(function (a, b) { return (b.start ? 1 : 0) - (a.start ? 1 : 0); });
+    // order: starting class first, then the rest in sheet order; other classes form one locked block,
+    // first when the starting class is one of them (so its saving throws apply), otherwise last
+    var byStart = function (a, b) { return (b.start ? 1 : 0) - (a.start ? 1 : 0); };
+    picked.sort(byStart); others.sort(byStart);
+    var otherFirst = others.some(function (o) { return o.start; });
+    var lockedN = Math.min(20, others.reduce(function (t, o) { return t + o.lvl; }, 0));
     var levels = [];
-    picked.forEach(function (p) { for (var i = 0; i < p.lv && levels.length < 20; i++) levels.push(p.id); });
-    var total = levels.length;
+    picked.forEach(function (p) { for (var i = 0; i < p.lv && levels.length < 20 - lockedN; i++) levels.push(p.id); });
+    if (!levels.length) throw new Error('The character is already level 20 in classes the planner does not model.');
+    var total = levels.length + lockedN;
     if (picked.length > 1) notices.push('D&D Beyond does not record the order you took levels, so the planner put ' + D.CLASSES[picked[0].id].name + ' first. Rearrange them under Levels.');
+    if (others.length) notices.push('Kept ' + others.map(function (o) { return o.label; }).join(', ') + ' as locked levels' + (otherFirst ? ' at the start (your starting class, so its saving throws apply)' : ' after your other levels') + '. The planner counts them toward your level, proficiency and hit points but doesn\'t list their features.');
     if (total < 20) notices.push('The character is level ' + total + '. Add levels under Class levels to plan ahead.');
-    if (skipped.length) notices.push('Skipped classes the planner does not cover yet: ' + skipped.join(', ') + '.');
 
-    var sub = {};
+    var sub = {}, otherSub = {};
     picked.forEach(function (p) {
       if (!p.sub) return;
       var list = D.CLASSES[p.id].ed[ed].subclasses, hit = null;
       list.forEach(function (s) { if (!hit && s.name.toLowerCase() === p.sub.toLowerCase()) hit = s; });
       list.forEach(function (s) { if (!hit && norm(s.name) === norm(p.sub)) hit = s; });
       if (hit) sub[p.id] = hit.id;
-      else notices.push('Subclass "' + p.sub + '" is not in the planner\'s ' + ed + ' list; pick one by hand.');
+      else { otherSub[p.id] = { sub: null, subName: p.sub }; notices.push('Subclass "' + p.sub + '" is not in the planner\'s ' + ed + ' list. It is kept on the build, but its features are not shown.'); }
     });
 
     notices.push('Ability scores include racial, background, class and feat bonuses but not magic items.');
-    return { ed: ed, levels: levels, ab: scores(c), sub: sub, name: String(c.name || 'Imported character').slice(0, 60), show: Math.max(1, total), notices: notices, total: total };
+    var other = others.map(function (o) { return { cls: o.cls, lvl: o.lvl, sub: o.sub, subName: o.subName }; });
+    return { ed: ed, levels: levels, other: other, otherFirst: otherFirst, otherSub: otherSub, ab: scores(c), sub: sub, name: String(c.name || 'Imported character').slice(0, 60), show: Math.max(1, total), notices: notices, total: total };
   }
 
-  var API = { parse: parse, idFromLink: idFromLink, apiUrl: apiUrl };
+  var API = { parse: parse, idFromLink: idFromLink, isShortLink: isShortLink, apiUrl: apiUrl };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.DdbImport = API;
 })(this);

@@ -97,10 +97,11 @@ var fx = require('fs').readFileSync(path.join(__dirname, 'fixtures', 'ddb-sample
 var im = X.parse(D, fx, '2024');
 eq('ddb edition from subclass names', im.ed, '2014');
 eq('ddb levels (starting class first, stops at character level)', E.encodeLevels(D, im.levels), 'PPWWWSSSS');
-eq('ddb total and show level', [im.total, im.show], [9, 9]);
+eq('ddb total and show level include the locked Fighter level', [im.total, im.show], [10, 10]);
+eq('ddb keeps Fighter as a locked level after the starting class', [im.other, im.otherFirst], [[{ cls: 'fighter', lvl: 1, sub: null, subName: null }], false]);
 eq('ddb subclasses', im.sub, { warlock: 'hexblade', sorcerer: 'divine-soul' });
 eq('ddb ability scores (race+feat, no items)', im.ab, [14, 10, 14, 8, 10, 16]);
-eq('ddb skipped Fighter noted', im.notices.some(function (n) { return /Fighter 1/.test(n); }), true);
+eq('ddb locked Fighter noted', im.notices.some(function (n) { return /Fighter 1/.test(n); }), true);
 eq('ddb link parsing', [X.idFromLink('https://www.dndbeyond.com/characters/12345678'), X.idFromLink('https://www.dndbeyond.com/profile/Someone/characters/987654'), X.idFromLink('nope')], ['12345678', '987654', null]);
 var j24 = JSON.parse(fx); j24.data.classes[0].subclassDefinition.name = 'Fiend Patron'; j24.data.classes[2].subclassDefinition.name = 'Clockwork Sorcery';
 var im24 = X.parse(D, j24, '2014');
@@ -118,9 +119,34 @@ eq('character classes in first-taken order', E.charClasses(D, cb), [
   { cls: 'sorcerer', lvl: 4, sub: null, subName: null }]);
 var fc = E.buildFromChar(D, { name: 'Aric', ed: '2024', ab: [15, 10, 14, 8, 10, 16], classes: [
   { cls: 'sorcerer', lvl: 3, sub: 'x-other-site-id', subName: 'Clockwork Sorcery' }, { cls: 'druid', lvl: 2 }, { cls: 'paladin', lvl: 2, sub: null, subName: null }] });
-eq('character -> build: levels in class order, unknown classes skipped', [E.encodeLevels(D, fc.levels), fc.skipped, fc.show], ['SSSPP', ['druid 2'], 5]);
+eq('character -> build: levels in class order, unknown classes locked', [E.encodeLevels(D, fc.levels), fc.other.map(function (o) { return o.cls + o.lvl; }), fc.otherFirst, fc.show], ['SSSPP', ['druid2'], false, 7]);
 eq('character -> build: subclass matched by name when ids differ', fc.sub, { sorcerer: 'clockwork' });
 eq('character round trip', E.charClasses(D, E.buildFromChar(D, { ed: '2014', classes: E.charClasses(D, cb) })), E.charClasses(D, cb));
 eq('sameClasses ignores class order', [E.sameClasses([{ cls: 'a', lvl: 1 }, { cls: 'b', lvl: 2 }], [{ cls: 'b', lvl: 2 }, { cls: 'a', lvl: 1 }]), E.sameClasses([{ cls: 'a', lvl: 1 }], [{ cls: 'a', lvl: 2 }])], [true, false]);
+// ---------- audit fixes: other classes and subclasses ----------
+var fp = E.buildFromChar(D, { ed: '2014', ab: [16, 10, 14, 8, 10, 14], classes: [{ cls: 'fighter', lvl: 5, subName: 'Champion' }, { cls: 'paladin', lvl: 15 }] });
+eq('Fighter 5 / Paladin 15: fighter locked first, paladin kept, total 20', [fp.other[0].lvl, fp.otherFirst, fp.levels.length, fp.show], [5, true, 15, 20]);
+var rp = E.compute(D, fp);
+eq('Fighter 5 / Paladin 15: 20 rows, proficiency +6 at 20, fighter saves', [rp.rows.length, rp.rows[19].prof, rp.saves, rp.rows[0].locked, rp.rows[5].cls, rp.rows[5].n], [20, 6, 'Strength, Constitution', true, 'paladin', 1]);
+eq('Fighter 5 / Paladin 15: HP uses d10 for the fighter levels', rp.rows[0].hp, 12);
+eq('Fighter 5 / Paladin 15: Extra Attack from fighter 5; paladin 5 says it does not stack',
+  [rp.rows[4].attacks, rp.rows[9].feats.some(function (f) { return f.name === 'Extra Attack' && /stack/.test(f.text); })], [2, true]);
+eq('Fighter 5 / Paladin 15: paladin alone uses its own table (caster level 8 at paladin 15)', rp.rows[19].casterLevel, 8);
+var cw = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'SSSSS'), ab: [10, 10, 10, 10, 10, 16], sub: {}, other: [{ cls: 'cleric', lvl: 5 }], otherFirst: true });
+eq('Cleric 5 / Sorcerer 5: cleric levels add to the multiclass caster level', cw.rows[9].casterLevel, 10);
+var ds = E.buildFromChar(D, { ed: '2024', ab: [10, 10, 10, 10, 10, 16], classes: [{ cls: 'sorcerer', lvl: 6, sub: 'divine-soul', subName: 'Divine Soul' }] });
+eq('unknown 2024 subclass (Divine Soul) is kept as otherSub', [ds.sub, ds.otherSub], [{}, { sorcerer: { sub: 'divine-soul', subName: 'Divine Soul' } }]);
+eq('otherSub round-trips into the shared classes', E.charClasses(D, ds), [{ cls: 'sorcerer', lvl: 6, sub: 'divine-soul', subName: 'Divine Soul' }]);
+var rds = E.compute(D, ds);
+eq('otherSub: no "choose a subclass" warning, named at the subclass level', [rds.warnings.length, rds.rows[2].feats.some(function (f) { return /Divine Soul/.test(f.name); })], [0, true]);
+eq('2024 Sorcadin blurb no longer claims an extra caster level', /one more caster level/.test(D.PRESETS.filter(function (p) { return p.id === 'sorcadin24'; })[0].blurb), false);
+var pa24 = E.compute(D, { ed: '2024', levels: E.decodeLevels(D, 'PPPPPPSSSSSSSSSSSSSS'), ab: [15, 8, 14, 8, 10, 16], sub: {} });
+var pa14 = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'PPPPPPSSSSSSSSSSSSSS'), ab: [15, 8, 14, 8, 10, 16], sub: {} });
+eq('Pal 6 / Sorc 14 is caster level 17 in both editions', [pa14.rows[19].casterLevel, pa24.rows[19].casterLevel], [17, 17]);
+eq('ddb.ac short links are recognised', [X.isShortLink('https://ddb.ac/characters/123/AbCd'), X.isShortLink('https://www.dndbeyond.com/characters/1')], [true, false]);
+var js = JSON.parse(fx); js.data.classes.forEach(function (k) { k.isStartingClass = k.definition.name === 'Fighter'; });
+var ims = X.parse(D, js, '2014');
+eq('ddb: a skipped starting class goes first, so its saving throws apply', [ims.otherFirst, E.compute(D, ims).saves], [true, 'Strength, Constitution']);
+
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

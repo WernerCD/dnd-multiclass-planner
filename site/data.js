@@ -504,7 +504,7 @@
       blurb: 'Paladin 6 for Extra Attack and Aura of Protection, then Sorcerer for slots to smite with and Quickened Spell.' },
     { id: 'sorcadin24', name: 'Sorcadin', ed: '2024', lv: 'PPPPPPSSSSSSSSSSSSSS',
       sub: { paladin: 'devotion', sorcerer: 'clockwork' }, ab: [15, 8, 14, 8, 10, 16],
-      blurb: 'The same split under 2024 rules: one more caster level from rounding up, but Divine Smite is a spell now.' },
+      blurb: 'The same split under 2024 rules: Paladin 6 for Extra Attack and Aura of Protection, then Sorcerer for slots and Metamagic. Caster level is 17 in both editions here, because an even paladin level loses nothing to rounding. Divine Smite is now a bonus-action spell, so you smite at most once per turn and it competes with Quickened Spell for your bonus action.' },
     { id: 'hexadin', name: 'Hexadin', ed: '2014', lv: 'PWPPPPPWWPPPPPPPPPPP',
       sub: { paladin: 'vengeance', warlock: 'hexblade' }, ab: [13, 10, 14, 8, 10, 16], boon: 'blade',
       blurb: 'Hexblade dip for Charisma attacks, so Cha drives to-hit, damage, auras and spells. Pact slots refuel smites on a short rest.' },
@@ -535,7 +535,22 @@
     ['Transmuted Spell', 'Swap a spell\'s damage type (Tasha\'s in 2014; PHB in 2024).']
   ];
 
-  var DATA = { CLASSES: CLASSES, CLASS_ORDER: CLASS_ORDER, PACT_BOONS: PACT_BOONS, ED_INFO: ED_INFO, PRESETS: PRESETS, METAMAGIC: METAMAGIC };
+  /* Classes the planner doesn't model in detail. Shared characters can carry them; they show as locked levels
+     and count toward character level, proficiency, hit points, Extra Attack and the multiclass caster level. */
+  var OTHER_CLASSES = {
+    artificer: { name: 'Artificer', hitDie: 8, saves: 'Constitution, Intelligence', caster: 'artificer' },
+    barbarian: { name: 'Barbarian', hitDie: 12, saves: 'Strength, Constitution', extraAttack: [5] },
+    bard: { name: 'Bard', hitDie: 8, saves: 'Dexterity, Charisma', caster: 'full' },
+    cleric: { name: 'Cleric', hitDie: 8, saves: 'Wisdom, Charisma', caster: 'full' },
+    druid: { name: 'Druid', hitDie: 8, saves: 'Intelligence, Wisdom', caster: 'full' },
+    fighter: { name: 'Fighter', hitDie: 10, saves: 'Strength, Constitution', extraAttack: [5, 11, 20], thirdSub: /eldritch knight/i },
+    monk: { name: 'Monk', hitDie: 8, saves: 'Strength, Dexterity', extraAttack: [5] },
+    ranger: { name: 'Ranger', hitDie: 10, saves: 'Strength, Dexterity', caster: 'half', extraAttack: [5] },
+    rogue: { name: 'Rogue', hitDie: 8, saves: 'Dexterity, Intelligence', thirdSub: /arcane trickster/i },
+    wizard: { name: 'Wizard', hitDie: 6, saves: 'Intelligence, Wisdom', caster: 'full' }
+  };
+
+  var DATA = { CLASSES: CLASSES, CLASS_ORDER: CLASS_ORDER, OTHER_CLASSES: OTHER_CLASSES, PACT_BOONS: PACT_BOONS, ED_INFO: ED_INFO, PRESETS: PRESETS, METAMAGIC: METAMAGIC };
   if (typeof module !== 'undefined' && module.exports) module.exports = DATA;
   else root.PLANNER_DATA = DATA;
 })(this);
