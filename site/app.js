@@ -294,6 +294,11 @@
     var bad = {};
     var need = {};
     if (r.used.length > 1) r.used.forEach(function (id) { var pre = D.CLASSES[id].prereq; Object.keys(pre).forEach(function (a) { need[a] = Math.max(need[a] || 0, pre[a]); }); });
+    // either-or prerequisites (Fighter: Str 13 or Dex 13): flag both only when neither is met
+    if (r.used.length > 1) r.used.forEach(function (id) {
+      var any = D.CLASSES[id].prereqAny;
+      if (any && !Object.keys(any).some(function (k) { return state.ab[ABIL.indexOf(k)] >= any[k]; })) Object.keys(any).forEach(function (k) { need[k] = Math.max(need[k] || 0, any[k]); });
+    });
     ABIL.forEach(function (a, i) { if (need[a] && state.ab[i] < need[a]) bad[a] = true; });
     var wrap = $('abil');
     if (!wrap.children.length) {

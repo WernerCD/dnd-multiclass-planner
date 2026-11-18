@@ -18,20 +18,30 @@
   function profBonus(L) { return 2 + Math.floor((L - 1) / 4); }
   function slotsForCasterLevel(cl) { return cl > 0 ? MC_TABLE[Math.min(cl, 20) - 1].slice() : []; }
 
-  function hasSpellcasting(D, id, lv, ed) {
-    var c = D.CLASSES[id];
-    if (c.caster !== 'full' && c.caster !== 'half' && c.caster !== 'third' && c.caster !== 'artificer') return false;
-    return lv >= (c.ed[ed].spellcastingFrom || 1);
+  /* How a class casts. A subclass can add casting to a class that has none (Eldritch Knight, Arcane Trickster):
+     its `casting` block then supplies the caster type, ability, start level and spell tables. */
+  function castInfo(D, id, ed, subs) {
+    var c = D.CLASSES[id], e = c.ed[ed], sub = subs && findSub(D, id, ed, subs[id]);
+    if ((!c.caster || c.caster === 'none') && sub && sub.casting) {
+      var k = sub.casting;
+      return { caster: k.caster, castAbil: k.castAbil, from: k.spellcastingFrom || 3, spells: k.spells, cantrips: k.cantrips };
+    }
+    return { caster: c.caster || 'none', castAbil: c.castAbil || 'cha', from: e.spellcastingFrom || 1, spells: e.spells, cantrips: e.cantrips };
+  }
+  function hasSpellcasting(D, id, lv, ed, subs) {
+    var k = castInfo(D, id, ed, subs);
+    if (k.caster !== 'full' && k.caster !== 'half' && k.caster !== 'third' && k.caster !== 'artificer') return false;
+    return lv >= k.from;
   }
 
   /* Caster level for the shared slot table. Pact Magic never counts.
      One Spellcasting class: use that class's own table (half casters = ceil(level/2) in both editions).
      Two or more: 2014 rounds half/third casters down, 2024 rounds half casters up (third casters down). */
-  function casterLevel(D, counts, ed, extra) {
+  function casterLevel(D, counts, ed, extra, subs) {
     var casting = [];
     D.CLASS_ORDER.forEach(function (id) {
       var lv = counts[id] || 0;
-      if (lv && hasSpellcasting(D, id, lv, ed)) casting.push({ id: id, lv: lv, type: D.CLASSES[id].caster });
+      if (lv && hasSpellcasting(D, id, lv, ed, subs)) casting.push({ id: id, lv: lv, type: castInfo(D, id, ed, subs).caster });
     });
     (extra || []).forEach(function (x) { casting.push(x); });
     var total = 0, multi = casting.length > 1;
@@ -54,17 +64,17 @@
     return { count: p.slots[lv - 1], level: p.level[lv - 1], arcanum: arc };
   }
 
-  function maxSpellLevel(D, id, lv, ed, pact) {
-    var c = D.CLASSES[id];
+  function maxSpellLevel(D, id, lv, ed, pact, subs) {
+    var c = castInfo(D, id, ed, subs);
     if (c.caster === 'pact') return pact ? pact.level : 0;
-    if (!hasSpellcasting(D, id, lv, ed)) return 0;
+    if (!hasSpellcasting(D, id, lv, ed, subs)) return 0;
     if (c.caster === 'full') return Math.min(9, Math.ceil(lv / 2));
     if (c.caster === 'half' || c.caster === 'artificer') return Math.min(5, Math.ceil(Math.ceil(lv / 2) / 2));
     return Math.min(4, Math.ceil(Math.ceil(lv / 3) / 2));
   }
 
-  function spellsFor(D, id, lv, ed, mods) {
-    var s = D.CLASSES[id].ed[ed].spells;
+  function spellsFor(D, id, lv, ed, mods, subs) {
+    var s = castInfo(D, id, ed, subs).spells;
     if (!s) return 0;
     if (s.formula === 'chaHalfDown') return lv >= 2 ? Math.max(1, mods.cha + Math.floor(lv / 2)) : 0;
     if (s.formula === 'abilLevel') return Math.max(1, mods[s.abil] + lv);
@@ -117,13 +127,14 @@
     var ab = {}; ABIL.forEach(function (k, i) { ab[k] = +build.ab[i] || 10; });
     var chaMod = mod(ab.cha), conMod = mod(ab.con), mods = {};
     ABIL.forEach(function (k) { mods[k] = mod(ab[k]); });
-    var isCaster = function (cid) { var c = D.CLASSES[cid]; return c.caster && c.caster !== 'none'; };
+    var subs = build.sub || {};
+    var isCaster = function (cid) { return castInfo(D, cid, ed, subs).caster !== 'none'; };
     // spell save DC and attack for each class that casts (by that class's ability)
     function dcsAt(L) {
       var out = [];
       D.CLASS_ORDER.forEach(function (cid) {
         if (!counts[cid] || !isCaster(cid)) return;
-        var ab0 = D.CLASSES[cid].castAbil || 'cha';
+        var ab0 = castInfo(D, cid, ed, subs).castAbil || 'cha';
         out.push({ cls: cid, abil: ab0, dc: 8 + profBonus(L) + mods[ab0], atk: profBonus(L) + mods[ab0] });
       });
       return out;
@@ -173,7 +184,7 @@
         var atk0 = attacksAt();
         if (otherAttacks() > 1) hadExtraAttack = true;
         hp += Math.max(1, (L === 1 ? info.hitDie : info.hitDie / 2 + 1) + conMod);
-        var clo = casterLevel(D, counts, ed, extraCasting());
+        var clo = casterLevel(D, counts, ed, extraCasting(), subs);
         var c0 = {}; D.CLASS_ORDER.forEach(function (k) { c0[k] = counts[k]; });
         var prev = rows.length ? rows[rows.length - 1] : null;
         rows.push({ L: L, locked: true, other: o.cls, otherName: info.name, n: oc[o.cls], prof: profBonus(L), counts: c0,
@@ -229,7 +240,7 @@
       if (ce.epicBoon === n) { feats.push({ name: 'Epic Boon', text: 'An Epic Boon feat, or another feat you qualify for.', kind: 'asi' }); asis.push(L); }
 
       // casting
-      var cl = casterLevel(D, counts, ed, extraCasting());
+      var cl = casterLevel(D, counts, ed, extraCasting(), subs);
       var slots = slotsForCasterLevel(cl.level);
       var pact = pactAt(D, counts.warlock || 0);
 
@@ -239,10 +250,10 @@
         var c = D.CLASSES[cid], e = c.ed[ed];
         spells.push({
           cls: cid, lv: lv,
-          cantrips: e.cantrips ? e.cantrips[lv - 1] : 0,
-          count: spellsFor(D, cid, lv, ed, mods),
-          kind: e.spells ? e.spells.kind : '',
-          max: maxSpellLevel(D, cid, lv, ed, cid === 'warlock' ? pact : null)
+          cantrips: castInfo(D, cid, ed, subs).cantrips ? castInfo(D, cid, ed, subs).cantrips[lv - 1] : 0,
+          count: spellsFor(D, cid, lv, ed, mods, subs),
+          kind: castInfo(D, cid, ed, subs).spells ? castInfo(D, cid, ed, subs).spells.kind : '',
+          max: maxSpellLevel(D, cid, lv, ed, cid === 'warlock' ? pact : null, subs)
         });
       });
 
@@ -343,6 +354,9 @@
       used.forEach(function (k) {
         var pre = D.CLASSES[k].prereq, miss = [];
         Object.keys(pre).forEach(function (a) { if (ab[a] < pre[a]) miss.push(ABIL_NAME[a] + ' ' + pre[a] + ' (you have ' + ab[a] + ')'); });
+        var any = D.CLASSES[k].prereqAny;
+        if (any && !Object.keys(any).some(function (a) { return ab[a] >= any[a]; }))
+          miss.push(Object.keys(any).map(function (a) { return ABIL_NAME[a] + ' ' + any[a]; }).join(' or '));
         if (miss.length) warnings.push({ cls: k, text: D.CLASSES[k].name + ' needs ' + miss.join(' and ') + ' to multiclass ' + (k === first ? 'out of it' : 'into it') + '.' });
       });
     }
@@ -412,7 +426,7 @@
   var API = {
     MC_TABLE: MC_TABLE, ABIL: ABIL, ABIL_NAME: ABIL_NAME, ORD: ORD,
     mod: mod, profBonus: profBonus, casterLevel: casterLevel, slotsForCasterLevel: slotsForCasterLevel,
-    pactAt: pactAt, maxSpellLevel: maxSpellLevel, compute: compute, findSub: findSub,
+    pactAt: pactAt, maxSpellLevel: maxSpellLevel, compute: compute, findSub: findSub, castInfo: castInfo,
     encodeLevels: encodeLevels, decodeLevels: decodeLevels,
     charClasses: charClasses, buildFromChar: buildFromChar, sameClasses: sameClasses, subKey: subKey, otherTotal: otherTotal, sequence: sequence
   };

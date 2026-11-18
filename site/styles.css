@@ -62,6 +62,7 @@
   --sorc: #b0383a; --sorc-bg: #f6dfdf;
   --barb: #a4501f; --dru: #3d7a35;
   --bard: #9c2f7a; --clr: #76680a; --wiz: #2b55a8; --rgr: #2b6b5a; --art: #7a5230;
+  --ftr: #7a4a3a; --rog: #4a5560; --monk: #2f6a80;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -71,6 +72,7 @@
     --sorc: #ef8a8a; --sorc-bg: #3a1f22;
     --barb: #f0a06a; --dru: #8fcf7f;
     --bard: #f08bd0; --clr: #e3d36a; --wiz: #8fb2ff; --rgr: #7fd1b9; --art: #d9a875;
+    --ftr: #e3a48f; --rog: #b4c0cc; --monk: #86c9e0;
   }
 }
 :root[data-theme="dark"] {
@@ -80,6 +82,7 @@
   --sorc: #ef8a8a; --sorc-bg: #3a1f22;
   --barb: #f0a06a; --dru: #8fcf7f;
   --bard: #f08bd0; --clr: #e3d36a; --wiz: #8fb2ff; --rgr: #7fd1b9; --art: #d9a875;
+  --ftr: #e3a48f; --rog: #b4c0cc; --monk: #86c9e0;
 }
 
 * { box-sizing: border-box; }
@@ -199,6 +202,9 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 .step.c-wizard, .lv.c-wizard, .tag.c-wizard { border-left-color: var(--wiz); } .split .c-wizard { color: var(--wiz); }
 .step.c-ranger, .lv.c-ranger, .tag.c-ranger { border-left-color: var(--rgr); } .split .c-ranger { color: var(--rgr); }
 .step.c-artificer, .lv.c-artificer, .tag.c-artificer { border-left-color: var(--art); } .split .c-artificer { color: var(--art); }
+.step.c-fighter, .lv.c-fighter, .tag.c-fighter { border-left-color: var(--ftr); } .split .c-fighter { color: var(--ftr); }
+.step.c-rogue, .lv.c-rogue, .tag.c-rogue { border-left-color: var(--rog); } .split .c-rogue { color: var(--rog); }
+.step.c-monk, .lv.c-monk, .tag.c-monk { border-left-color: var(--monk); } .split .c-monk { color: var(--monk); }
 .step.add-cls { flex-wrap: wrap; border-style: dashed; }
 .step.add-cls select { min-width: 10rem; }
 .step.add-cls .hint { flex-basis: 100%; margin: 0; }
@@ -308,7 +314,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 @media print {
   /* planner class colours on paper; same selector as the shared print block so a dark system preference can't win */
   :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
-    --soft-bg: #f1f1f1; --pal-bg: #f5ecd2; --lock-bg: #ebe2f6; --sorc-bg: #f6dfdf; --pal: #8a6a10; --lock: #5a3290; --sorc: #a02c2e; --barb: #8a3f14; --dru: #2f6a28; --bard: #8a2268; --clr: #5f5408; --wiz: #22468c; --rgr: #215747; --art: #634225;
+    --soft-bg: #f1f1f1; --pal-bg: #f5ecd2; --lock-bg: #ebe2f6; --sorc-bg: #f6dfdf; --pal: #8a6a10; --lock: #5a3290; --sorc: #a02c2e; --barb: #8a3f14; --dru: #2f6a28; --bard: #8a2268; --clr: #5f5408; --wiz: #22468c; --rgr: #215747; --art: #634225; --ftr: #633b2e; --rog: #3a444d; --monk: #255466;
   }
   select, input[type=number], input[type=text] { appearance: none; -webkit-appearance: none; border: 0 !important; background: none !important; padding: 0 !important; min-height: 0; color: var(--ink); }
   .controls, .preset-blurb, .char-bar, .import-note, .order, .fill, #show, .cls-steps .step-ctl .btn, #notes2024, .notes, .about, .site-footer .foot-links { display: none !important; }

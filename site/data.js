@@ -483,8 +483,8 @@
   };
 
   var CLASS_ORDER = ['paladin', 'warlock', 'sorcerer'];
-  // more classes live in data-classes.js and data-casters.js (loaded first in the page, required here in Node)
-  var MORE = root.PLANNER_MORE_LIST || (typeof module !== 'undefined' && module.exports ? [require('./data-classes.js'), require('./data-casters.js')] : []);
+  // more classes live in data-classes.js, data-casters.js and data-martials.js (loaded first in the page, required here in Node)
+  var MORE = root.PLANNER_MORE_LIST || (typeof module !== 'undefined' && module.exports ? [require('./data-classes.js'), require('./data-casters.js'), require('./data-martials.js')] : []);
   MORE.forEach(function (m) { m.ORDER.forEach(function (id) { CLASSES[id] = m.CLASSES[id]; CLASS_ORDER.push(id); }); });
   var MAX_CLASSES = 3; // a build mixes at most this many classes
 
@@ -548,9 +548,6 @@
   /* Classes the planner doesn't model in detail. Shared characters can carry them; they show as locked levels
      and count toward character level, proficiency, hit points, Extra Attack and the multiclass caster level. */
   var OTHER_CLASSES = {
-    fighter: { name: 'Fighter', hitDie: 10, saves: 'Strength, Constitution', extraAttack: [5, 11, 20], thirdSub: /eldritch knight/i },
-    monk: { name: 'Monk', hitDie: 8, saves: 'Strength, Dexterity', extraAttack: [5] },
-    rogue: { name: 'Rogue', hitDie: 8, saves: 'Dexterity, Intelligence', thirdSub: /arcane trickster/i },
   };
 
   var DATA = { CLASSES: CLASSES, CLASS_ORDER: CLASS_ORDER, MAX_CLASSES: MAX_CLASSES, OTHER_CLASSES: OTHER_CLASSES, PACT_BOONS: PACT_BOONS, ED_INFO: ED_INFO, PRESETS: PRESETS, METAMAGIC: METAMAGIC };

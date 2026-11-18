@@ -96,12 +96,14 @@ var X = require(path.join(__dirname, '..', 'site', 'ddb.js'));
 var fx = require('fs').readFileSync(path.join(__dirname, 'fixtures', 'ddb-sample.json'), 'utf8');
 var im = X.parse(D, fx, '2024');
 eq('ddb edition from subclass names', im.ed, '2014');
-eq('ddb levels (starting class first, stops at character level)', E.encodeLevels(D, im.levels), 'PPWWWSSSS');
-eq('ddb total and show level include the locked Fighter level', [im.total, im.show], [10, 10]);
-eq('ddb keeps Fighter as a locked level after the starting class', [im.other, im.otherFirst], [[{ cls: 'fighter', lvl: 1, sub: null, subName: null }], false]);
+eq('ddb levels (starting class first, every class imported)', E.encodeLevels(D, im.levels), 'PPWWWSSSSF');
+eq('ddb total and show level', [im.total, im.show], [10, 10]);
+eq('ddb imports Fighter as a real class (nothing locked)', im.other, []);
+var jh = JSON.parse(fx); jh.data.classes[3].definition.name = 'Blood Hunter'; var imh = X.parse(D, jh, '2014');
+eq('ddb keeps a homebrew class as a locked level after the starting class', [imh.other, imh.otherFirst, imh.total], [[{ cls: 'blood hunter', lvl: 1, sub: null, subName: null }], false, 10]);
 eq('ddb subclasses', im.sub, { warlock: 'hexblade', sorcerer: 'divine-soul' });
 eq('ddb ability scores (race+feat, no items)', im.ab, [14, 10, 14, 8, 10, 16]);
-eq('ddb locked Fighter noted', im.notices.some(function (n) { return /Fighter 1/.test(n); }), true);
+eq('ddb locked homebrew class noted', imh.notices.some(function (n) { return /Blood Hunter 1/.test(n); }), true);
 eq('ddb link parsing', [X.idFromLink('https://www.dndbeyond.com/characters/12345678'), X.idFromLink('https://www.dndbeyond.com/profile/Someone/characters/987654'), X.idFromLink('nope')], ['12345678', '987654', null]);
 var j24 = JSON.parse(fx); j24.data.classes[0].subclassDefinition.name = 'Fiend Patron'; j24.data.classes[2].subclassDefinition.name = 'Clockwork Sorcery';
 var im24 = X.parse(D, j24, '2014');
@@ -124,10 +126,11 @@ eq('character -> build: subclass matched by name when ids differ', fc.sub, { sor
 eq('character round trip', E.charClasses(D, E.buildFromChar(D, { ed: '2014', classes: E.charClasses(D, cb) })), E.charClasses(D, cb));
 eq('sameClasses ignores class order', [E.sameClasses([{ cls: 'a', lvl: 1 }, { cls: 'b', lvl: 2 }], [{ cls: 'b', lvl: 2 }, { cls: 'a', lvl: 1 }]), E.sameClasses([{ cls: 'a', lvl: 1 }], [{ cls: 'a', lvl: 2 }])], [true, false]);
 // ---------- audit fixes: other classes and subclasses ----------
+var hb = E.buildFromChar(D, { ed: '2014', ab: [16, 10, 14, 8, 10, 14], classes: [{ cls: 'mystic', lvl: 5 }, { cls: 'paladin', lvl: 15 }] });
+eq('homebrew Mystic 5 / Paladin 15: mystic locked first, paladin kept, total 20', [hb.other[0].lvl, hb.otherFirst, hb.levels.length, hb.show, E.compute(D, hb).rows[19].prof], [5, true, 15, 20, 6]);
 var fp = E.buildFromChar(D, { ed: '2014', ab: [16, 10, 14, 8, 10, 14], classes: [{ cls: 'fighter', lvl: 5, subName: 'Champion' }, { cls: 'paladin', lvl: 15 }] });
-eq('Fighter 5 / Paladin 15: fighter locked first, paladin kept, total 20', [fp.other[0].lvl, fp.otherFirst, fp.levels.length, fp.show], [5, true, 15, 20]);
 var rp = E.compute(D, fp);
-eq('Fighter 5 / Paladin 15: 20 rows, proficiency +6 at 20, fighter saves', [rp.rows.length, rp.rows[19].prof, rp.saves, rp.rows[0].locked, rp.rows[5].cls, rp.rows[5].n], [20, 6, 'Strength, Constitution', true, 'paladin', 1]);
+eq('Fighter 5 / Paladin 15: 20 rows, proficiency +6 at 20, fighter saves, Champion matched', [rp.rows.length, rp.rows[19].prof, rp.saves, !!rp.rows[0].locked, rp.rows[5].cls, rp.rows[5].n, fp.sub.fighter], [20, 6, 'Strength, Constitution', false, 'paladin', 1, 'champion']);
 eq('Fighter 5 / Paladin 15: HP uses d10 for the fighter levels', rp.rows[0].hp, 12);
 eq('Fighter 5 / Paladin 15: Extra Attack from fighter 5; paladin 5 says it does not stack',
   [rp.rows[4].attacks, rp.rows[9].feats.some(function (f) { return f.name === 'Extra Attack' && /stack/.test(f.text); })], [2, true]);
@@ -146,7 +149,7 @@ eq('Pal 6 / Sorc 14 is caster level 17 in both editions', [pa14.rows[19].casterL
 eq('ddb.ac short links are recognised', [X.isShortLink('https://ddb.ac/characters/123/AbCd'), X.isShortLink('https://www.dndbeyond.com/characters/1')], [true, false]);
 var js = JSON.parse(fx); js.data.classes.forEach(function (k) { k.isStartingClass = k.definition.name === 'Fighter'; });
 var ims = X.parse(D, js, '2014');
-eq('ddb: a skipped starting class goes first, so its saving throws apply', [ims.otherFirst, E.compute(D, ims).saves], [true, 'Strength, Constitution']);
+eq('ddb: the starting class goes first, so its saving throws apply', [ims.levels[0], E.compute(D, ims).saves], ['fighter', 'Strength, Constitution']);
 
 // ---------- stage 1: more classes (Barbarian, Druid), up to 3 classes ----------
 D.CLASS_ORDER.forEach(function (id) {
@@ -203,6 +206,25 @@ eq('Valor bard: Extra Attack at bard 6; Inspiration Cha uses and die', [vb.rows[
 var cl = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'CCCCCCZZZZ'), ab: [10, 10, 14, 16, 16, 10], sub: { cleric: 'light', wizard: 'evocation' } });
 eq('Cleric 6 / Wizard 4: DCs by Wis and Int; Channel Divinity 2; Arcane Recovery 2 levels', [cl.rows[9].dcs.map(function (d) { return d.abil + d.dc; }).join(' '), exr(cl.rows[9], 'clrCd'), exr(cl.rows[9], 'recov'), cl.rows[9].casterLevel], ['wis15 int15', 2, '2 lvls', 10]);
 eq('Cleric 2014 subclass at level 1 (Light domain features from 1)', cl.rows[0].feats.some(function (f) { return /Warding Flare/.test(f.name); }), true);
+
+// ---------- stage 3: Fighter, Rogue, Monk ----------
+var exm = function (row, key) { var x = row.res.extra.filter(function (r) { return r.key === key; })[0]; return x ? x.v : null; };
+var ftr = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'FFFFFFFFFFFFFFFFFFFF'), ab: [16, 12, 14, 10, 10, 8], sub: { fighter: 'champion' } });
+eq('Fighter Extra Attack 2/3/4 at 5, 11, 20; Action Surge 2 at 17; 7 ASIs (2014)', [ftr.rows[4].attacks, ftr.rows[10].attacks, ftr.rows[19].attacks, exm(ftr.rows[16], 'surge'), ftr.asis.length], [2, 3, 4, 2, 7]);
+var ek = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'FFFFFFFWWW'), ab: [16, 12, 14, 14, 10, 13], sub: { fighter: 'eldritch-knight' } });
+eq('Eldritch Knight: no casting before 3; EK 3 alone = caster level 1; EK 7 + Warlock = ceil(7/3) = 3 (Pact Magic is not Spellcasting); Int DC',
+  [ek.rows[1].casterLevel, ek.rows[2].casterLevel, ek.rows[9].casterLevel, ek.rows[9].dcs.map(function (d) { return d.abil; }).sort().join(','), ek.rows[6].spells[0].count, ek.rows[6].spells[0].max], [0, 1, 3, 'cha,int', 5, 2]);
+var fNoSub = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'FFFFF'), ab: [16, 12, 14, 14, 10, 13], sub: {} });
+eq('a Fighter without Eldritch Knight does not cast', [fNoSub.rows[4].casterLevel, fNoSub.rows[4].spells.length], [0, 0]);
+var at = E.compute(D, { ed: '2024', levels: E.decodeLevels(D, 'TTTTTTTTTZZZZZZZZZZZ'), ab: [8, 16, 12, 16, 12, 10], sub: { rogue: 'arcane-trickster', wizard: 'evoker' } });
+eq('Arcane Trickster 9 + Wizard 11 (2024): 3 + 11 = 14; Sneak Attack 5d6; AT cantrips 3', [at.rows[19].casterLevel, exm(at.rows[8], 'sneak'), at.rows[8].spells[0].cantrips], [14, '5d6', 3]);
+var mk = E.compute(D, { ed: '2024', levels: E.decodeLevels(D, 'MMMMMMMMMMMMMMMMM'), ab: [10, 16, 14, 10, 14, 8], sub: {} });
+eq('Monk 2024: focus = level, martial arts d12 at 17, Extra Attack at 5', [exm(mk.rows[16], 'ki'), exm(mk.rows[16], 'ma'), mk.rows[4].attacks], [17, 'd12', 2]);
+var fpq = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'FFFPPP'), ab: [10, 13, 14, 10, 10, 13], sub: {} });
+eq('Fighter needs Str 13 OR Dex 13: Dex 13 is enough', fpq.warnings.filter(function (w) { return /Fighter needs/.test(w.text); }).length, 0);
+var fpq2 = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'FFFPPP'), ab: [12, 12, 14, 10, 10, 13], sub: {} });
+eq('Fighter with neither Str 13 nor Dex 13 is flagged', fpq2.warnings.some(function (w) { return /Fighter needs Str 13 or Dex 13/.test(w.text); }), true);
+eq('all 13 classes are modelled', [D.CLASS_ORDER.length, Object.keys(D.OTHER_CLASSES).length], [13, 0]);
 
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);
