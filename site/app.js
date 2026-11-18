@@ -34,13 +34,32 @@
     return out;
   }
   function lockedCount(s) { return E.otherTotal(s); }
+  var LIMIT_MSG = 'A build can mix up to ' + (D.MAX_CLASSES || 3) + ' classes. Remove one first.';
+  // classes in the build (planner classes plus locked ones), optionally ignoring one level
+  function classSet(s, skipIndex) {
+    var set = Object.create(null);
+    s.levels.forEach(function (id, i) { if (i !== skipIndex) set[id] = 1; });
+    (s.other || []).forEach(function (o) { set['other:' + o.cls] = 1; });
+    return set;
+  }
+  function canAdd(s, id, skipIndex) { var set = classSet(s, skipIndex); return !!set[id] || Object.keys(set).length < (D.MAX_CLASSES || 3); }
+  var byName = function (a, b) { return D.CLASSES[a].name.localeCompare(D.CLASSES[b].name); };
   function totalLevel(s) { return Math.min(20, s.levels.length + lockedCount(s)); }
   function normalize(s) {
-    var other = cleanOther(s.other), locked = E.otherTotal({ other: other }), max = 20 - locked;
+    var conv = [], first = s.otherFirst !== false;
+    var rawOther = (Array.isArray(s.other) ? s.other : []).filter(function (x) {
+      var id = x && String(x.cls || '').toLowerCase();
+      if (!id || !has(D.CLASSES, id)) return true;
+      for (var i = 0; i < (parseInt(x.lvl, 10) || 0); i++) conv.push(id);
+      return false;
+    });
+    var other = cleanOther(rawOther), locked = E.otherTotal({ other: other }), max = 20 - locked;
     var okLv = Array.isArray(s.levels) && s.levels.length >= 1 && s.levels.every(function (x) { return has(D.CLASSES, x); });
+    var lv0 = okLv ? s.levels.slice() : (conv.length ? [] : E.decodeLevels(D, ''));
+    lv0 = first ? conv.concat(lv0) : lv0.concat(conv);
     var o = {
       ed: s.ed === '2024' ? '2024' : '2014',
-      levels: okLv ? s.levels.slice(0, max) : E.decodeLevels(D, ''),
+      levels: lv0.slice(0, max),
       ab: (Array.isArray(s.ab) && s.ab.length === 6 ? s.ab : [10, 10, 10, 10, 10, 10]).map(clampAb),
       sub: {}, otherSub: {}, boon: '', name: String(s.name || '').slice(0, 60),
       other: other, otherFirst: s.otherFirst !== false
@@ -331,7 +350,7 @@
     var sig = [narrow, len, JSON.stringify(state.other), state.otherFirst].join('|');
     if (wrap.dataset.sig !== sig) {
       wrap.dataset.sig = sig;
-      var opts = D.CLASS_ORDER.map(function (id) { var c = D.CLASSES[id]; return '<option value="' + id + '">' + esc(narrow ? c.short || c.name : c.name) + '</option>'; }).join('');
+      var opts = D.CLASS_ORDER.slice().sort(byName).map(function (id) { var c = D.CLASSES[id]; return '<option value="' + id + '">' + esc(narrow ? c.short || c.name : c.name) + '</option>'; }).join('');
       var lockH = '', L0 = off ? 1 : len + 1;
       state.other.forEach(function (o) {
         for (var k = 0; k < o.lvl && L0 <= 20; k++, L0++) lockH += '<div class="lv locked" title="' + esc(otherName(o.cls)) + ' levels come from your character and are locked"><span>Level ' + L0 + '</span><b>' + esc(otherName(o.cls)) + '</b></div>';
@@ -342,10 +361,14 @@
       var fo = ''; for (i = 1; i <= len; i++) fo += '<option value="' + i + '">' + (off + i) + '</option>';
       $('fillFrom').innerHTML = fo;
       $('fillTo').textContent = 'to ' + (off + len) + ' as';
-      $('fillCls').innerHTML = D.CLASS_ORDER.map(function (id) { return '<option value="' + id + '">' + esc(D.CLASSES[id].name) + '</option>'; }).join('');
+      $('fillCls').innerHTML = D.CLASS_ORDER.slice().sort(byName).map(function (id) { return '<option value="' + id + '">' + esc(D.CLASSES[id].name) + '</option>'; }).join('');
     }
     for (var j = 0; j < len; j++) {
       var cell = $('lv' + j), sel = cell.querySelector('select');
+      for (var oi = 0; oi < sel.options.length; oi++) {
+        var op = sel.options[oi], ok = canAdd(state, op.value, j);
+        op.disabled = !ok; op.title = ok ? '' : LIMIT_MSG;
+      }
       sel.value = state.levels[j];
       cell.className = 'lv c-' + state.levels[j] + (off + j + 1 > state.show ? ' future' : '');
     }
@@ -356,20 +379,28 @@
         '<div class="step-ctl"><span class="lock-n" title="Locked: a class the planner does not model">' + o.lvl + ' <small>locked</small></span>' +
         (state.charId ? '' : '<button type="button" class="btn" data-rmother="' + esc(o.cls) + '">Remove</button>') + '</div></div>';
     }).join('');
-    $('clsSteps').innerHTML = D.CLASS_ORDER.map(function (id) {
-      var c = D.CLASSES[id], n = last[id] || 0, room = 20 - len - locked;
+    var inUse = D.CLASS_ORDER.filter(function (id) { return last[id]; });
+    var room0 = 20 - len - locked, full = !canAdd(state, '__new__');
+    var addable = D.CLASS_ORDER.filter(function (id) { return !last[id]; }).sort(byName);
+    var addH = '<div class="step add-cls"><label for="addCls">Add a class</label><div class="step-ctl">' +
+      '<select id="addCls"' + (full ? ' disabled' : '') + '><option value="">' + (full ? 'Up to ' + (D.MAX_CLASSES || 3) + ' classes' : 'Choose...') + '</option>' +
+      addable.map(function (id) { return '<option value="' + id + '">' + esc(D.CLASSES[id].name) + '</option>'; }).join('') + '</select></div>' +
+      (full ? '<p class="hint small muted">' + esc(LIMIT_MSG) + '</p>' : !room0 ? '<p class="hint small muted">At level 20, a new class takes over your last level.</p>' : '') + '</div>';
+    $('clsSteps').innerHTML = inUse.map(function (id) {
+      var c = D.CLASSES[id], n = last[id] || 0, room = room0;
       var canDown = n > 0 && !(n === len), canUp = room > 0;
       return '<div class="step c-' + id + (n ? '' : ' zero') + '"><label for="cnt-' + id + '">' + esc(c.name) + '</label>' +
         '<div class="step-ctl"><button type="button" class="btn" data-step="' + id + '" data-d="-1" aria-label="One less ' + esc(c.name) + ' level"' + (canDown ? '' : ' disabled') + '>&minus;</button>' +
         '<input type="number" inputmode="numeric" min="0" max="20" id="cnt-' + id + '" data-cnt="' + id + '" value="' + n + '">' +
         '<button type="button" class="btn" data-step="' + id + '" data-d="1" aria-label="One more ' + esc(c.name) + ' level"' + (canUp ? '' : ' disabled') + '>+</button></div></div>';
-    }).join('') + lockedSteps;
+    }).join('') + lockedSteps + addH;
   }
 
   /* Change how many levels a class has. Keeps the existing order; removes that class's last levels
      or adds new ones at the end. The total stays between 1 and 20. */
   function setCount(id, n) {
     var lv = state.levels, cur = lv.filter(function (x) { return x === id; }).length, others = lv.length - cur, locked = lockedCount(state);
+    if (!cur && n > 0 && !canAdd(state, id)) { toast(LIMIT_MSG); return; }
     n = Math.max(others ? 0 : 1, Math.min(20 - others - locked, isNaN(n) ? cur : n));
     if (n === cur) return;
     var followEnd = state.show === totalLevel(state);
@@ -415,9 +446,20 @@
     if (res.sorcery) b.push('<span title="Sorcery points">SP ' + res.sorcery + '</span>');
     if (res.metamagic) b.push('<span title="Metamagic options">Meta ' + res.metamagic + '</span>');
     if (res.invocations) b.push('<span title="Eldritch Invocations">Inv ' + res.invocations + '</span>');
+    (res.extra || []).forEach(function (x) { b.push('<span title="' + esc(x.title) + '">' + esc(x.label) + ' ' + esc(x.v) + '</span>'); });
     return b.length ? '<div class="res">' + b.join('') + '</div>' : '';
   }
 
+  // one DC per casting ability (classes that share an ability share a DC)
+  function dcHtml(dcs) {
+    var seen = {}, out = [];
+    dcs.forEach(function (d) {
+      if (seen[d.abil]) { seen[d.abil].names.push(D.CLASSES[d.cls].short || D.CLASSES[d.cls].name); return; }
+      seen[d.abil] = { d: d, names: [D.CLASSES[d.cls].short || D.CLASSES[d.cls].name] }; out.push(seen[d.abil]);
+    });
+    if (out.length === 1) return out[0].d.dc + ' / ' + sgn(out[0].d.atk);
+    return out.map(function (x) { return '<span class="dc-part">' + x.d.dc + ' / ' + sgn(x.d.atk) + ' <small class="muted">' + esc(ABIL_NAME[x.d.abil] + ', ' + x.names.join(' & ')) + '</small></span>'; }).join(' ');
+  }
   function renderSummary(r) {
     var row = r.rows[state.show - 1];
     $('showOut').textContent = state.show;
@@ -429,7 +471,8 @@
       ['Split', '<span class="split-v">' + splitHtml(row.counts, r, state.show) + '</span>', 'wide'],
       ['Proficiency', sgn(row.prof)],
       ['Hit points', row.hp + ' <small class="muted">avg</small>'],
-      ['Spell DC / attack', row.dc + ' / ' + sgn(row.atk)],
+      ['Spell DC / attack', row.dcs && row.dcs.length
+        ? dcHtml(row.dcs) : '<span class="none">none</span>', row.dcs && row.dcs.length > 1 ? 'wide' : ''],
       ['Attacks', row.attacks + (row.attacks > 1 ? ' (Extra Attack)' : '')],
       ['Caster level', row.casterLevel || '0'],
       ['Spell slots', slotsHtml(row.slots), 'wide'],
@@ -505,6 +548,8 @@
     if (t.dataset.ed) return set(function () { state = normalize(Object.assign({}, state, { ed: t.dataset.ed })); presetId = ''; });
     if (t.id === 'fillBtn') return set(function () {
       var from = +$('fillFrom').value, cls = $('fillCls').value;
+      var trial = { levels: state.levels.slice(0, from - 1).concat([cls]), other: state.other };
+      if (Object.keys(classSet(trial)).length > (D.MAX_CLASSES || 3)) { toast(LIMIT_MSG); return; }
       for (var i = from - 1; i < state.levels.length; i++) state.levels[i] = cls;
       presetId = '';
     });
@@ -586,7 +631,18 @@
   document.addEventListener('change', function (ev) {
     var t = ev.target;
     if (t.dataset.cnt) return set(function () { setCount(t.dataset.cnt, parseInt(t.value, 10)); });
-    if (t.dataset.lv) return set(function () { state.levels[+t.dataset.lv] = t.value; presetId = ''; });
+    if (t.dataset.lv) {
+      if (!canAdd(state, t.value, +t.dataset.lv)) { toast(LIMIT_MSG); t.value = state.levels[+t.dataset.lv]; return; }
+      return set(function () { state.levels[+t.dataset.lv] = t.value; presetId = ''; });
+    }
+    if (t.id === 'addCls') {
+      var nc = t.value; if (!nc) return;
+      if (!canAdd(state, nc)) { toast(LIMIT_MSG); t.value = ''; return; }
+      return set(function () {
+        if (totalLevel(state) < 20) setCount(nc, 1);
+        else if (state.levels.length > 1) { state.levels[state.levels.length - 1] = nc; presetId = ''; } // level 20: the last level changes class
+      });
+    }
     if (t.dataset.sub) return set(function () {
       var sid = t.dataset.sub;
       if (t.value === '~') return; // the subclass kept from the character

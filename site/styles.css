@@ -60,6 +60,7 @@
   --pal: #a8841c; --pal-bg: #f5ecd2;
   --lock: #6a3fa0; --lock-bg: #ebe2f6;
   --sorc: #b0383a; --sorc-bg: #f6dfdf;
+  --barb: #a4501f; --dru: #3d7a35;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -67,6 +68,7 @@
     --pal: #d9b84a; --pal-bg: #332b15;
     --lock: #b592e6; --lock-bg: #2b2140;
     --sorc: #ef8a8a; --sorc-bg: #3a1f22;
+    --barb: #f0a06a; --dru: #8fcf7f;
   }
 }
 :root[data-theme="dark"] {
@@ -74,6 +76,7 @@
   --pal: #d9b84a; --pal-bg: #332b15;
   --lock: #b592e6; --lock-bg: #2b2140;
   --sorc: #ef8a8a; --sorc-bg: #3a1f22;
+  --barb: #f0a06a; --dru: #8fcf7f;
 }
 
 * { box-sizing: border-box; }
@@ -166,6 +169,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 /* class level steppers */
 .cls-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; margin-top: 12px; }
 .step { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-left-width: 4px; border-radius: 10px; background: var(--surface-2); }
+.step.c-barbarian { border-left-color: var(--barb); } .step.c-druid { border-left-color: var(--dru); }
 .step.c-paladin { border-left-color: var(--pal); } .step.c-warlock { border-left-color: var(--lock); } .step.c-sorcerer { border-left-color: var(--sorc); }
 .step.zero label { color: var(--muted); }
 .step label { font-weight: 600; }
@@ -185,6 +189,12 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 .lv.c-paladin, .tag.c-paladin { border-left-color: var(--pal); }
 .lv.c-warlock, .tag.c-warlock { border-left-color: var(--lock); }
 .lv.c-sorcerer, .tag.c-sorcerer { border-left-color: var(--sorc); }
+.lv.c-barbarian, .tag.c-barbarian { border-left-color: var(--barb); }
+.lv.c-druid, .tag.c-druid { border-left-color: var(--dru); }
+.step.add-cls { flex-wrap: wrap; border-style: dashed; }
+.step.add-cls select { min-width: 10rem; }
+.step.add-cls .hint { flex-basis: 100%; margin: 0; }
+.dc-part { display: inline-block; margin-right: 10px; white-space: nowrap; }
 .lv.future { opacity: .6; }
 .lv.locked { border-left-color: var(--muted); border-style: dashed; border-left-style: solid; background: var(--surface-2); }
 .lv.locked b { font-size: .85rem; font-weight: 600; padding: 6px 2px; min-height: 32px; }
@@ -197,6 +207,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 .split .c-other { color: var(--ink-2); }
 .feat.locked { color: var(--ink-2); }
 .fill { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; font-size: .9rem; color: var(--ink-2); }
+.split .c-barbarian { color: var(--barb); } .split .c-druid { color: var(--dru); }
 .split .c-paladin { color: var(--pal); } .split .c-warlock { color: var(--lock); } .split .c-sorcerer { color: var(--sorc); }
 
 /* summary */
@@ -289,7 +300,7 @@ dialog::backdrop { background: rgba(10, 14, 12, .55); }
 @media print {
   /* planner class colours on paper; same selector as the shared print block so a dark system preference can't win */
   :root, :root:not([data-theme="light"]), :root[data-theme="dark"] {
-    --soft-bg: #f1f1f1; --pal-bg: #f5ecd2; --lock-bg: #ebe2f6; --sorc-bg: #f6dfdf; --pal: #8a6a10; --lock: #5a3290; --sorc: #a02c2e;
+    --soft-bg: #f1f1f1; --pal-bg: #f5ecd2; --lock-bg: #ebe2f6; --sorc-bg: #f6dfdf; --pal: #8a6a10; --lock: #5a3290; --sorc: #a02c2e; --barb: #8a3f14; --dru: #2f6a28;
   }
   select, input[type=number], input[type=text] { appearance: none; -webkit-appearance: none; border: 0 !important; background: none !important; padding: 0 !important; min-height: 0; color: var(--ink); }
   .controls, .preset-blurb, .char-bar, .import-note, .order, .fill, #show, .cls-steps .step-ctl .btn, #notes2024, .notes, .about, .site-footer .foot-links { display: none !important; }

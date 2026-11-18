@@ -118,8 +118,8 @@ eq('character classes in first-taken order', E.charClasses(D, cb), [
   { cls: 'warlock', lvl: 3, sub: 'hexblade', subName: hexName },
   { cls: 'sorcerer', lvl: 4, sub: null, subName: null }]);
 var fc = E.buildFromChar(D, { name: 'Aric', ed: '2024', ab: [15, 10, 14, 8, 10, 16], classes: [
-  { cls: 'sorcerer', lvl: 3, sub: 'x-other-site-id', subName: 'Clockwork Sorcery' }, { cls: 'druid', lvl: 2 }, { cls: 'paladin', lvl: 2, sub: null, subName: null }] });
-eq('character -> build: levels in class order, unknown classes locked', [E.encodeLevels(D, fc.levels), fc.other.map(function (o) { return o.cls + o.lvl; }), fc.otherFirst, fc.show], ['SSSPP', ['druid2'], false, 7]);
+  { cls: 'sorcerer', lvl: 3, sub: 'x-other-site-id', subName: 'Clockwork Sorcery' }, { cls: 'cleric', lvl: 2 }, { cls: 'paladin', lvl: 2, sub: null, subName: null }] });
+eq('character -> build: levels in class order, unknown classes locked', [E.encodeLevels(D, fc.levels), fc.other.map(function (o) { return o.cls + o.lvl; }), fc.otherFirst, fc.show], ['SSSPP', ['cleric2'], false, 7]);
 eq('character -> build: subclass matched by name when ids differ', fc.sub, { sorcerer: 'clockwork' });
 eq('character round trip', E.charClasses(D, E.buildFromChar(D, { ed: '2014', classes: E.charClasses(D, cb) })), E.charClasses(D, cb));
 eq('sameClasses ignores class order', [E.sameClasses([{ cls: 'a', lvl: 1 }, { cls: 'b', lvl: 2 }], [{ cls: 'b', lvl: 2 }, { cls: 'a', lvl: 1 }]), E.sameClasses([{ cls: 'a', lvl: 1 }], [{ cls: 'a', lvl: 2 }])], [true, false]);
@@ -147,6 +147,43 @@ eq('ddb.ac short links are recognised', [X.isShortLink('https://ddb.ac/character
 var js = JSON.parse(fx); js.data.classes.forEach(function (k) { k.isStartingClass = k.definition.name === 'Fighter'; });
 var ims = X.parse(D, js, '2014');
 eq('ddb: a skipped starting class goes first, so its saving throws apply', [ims.otherFirst, E.compute(D, ims).saves], [true, 'Strength, Constitution']);
+
+// ---------- stage 1: more classes (Barbarian, Druid), up to 3 classes ----------
+D.CLASS_ORDER.forEach(function (id) {
+  var c = D.CLASSES[id];
+  ['2014', '2024'].forEach(function (ed) {
+    var e = c.ed[ed], bad = [];
+    if (!e) { bad.push('no edition'); }
+    else {
+      if (!e.subclassLabel || !e.subclassLevel || !Array.isArray(e.asi) || !e.mcProf) bad.push('core fields');
+      if (c.caster !== 'none' && c.caster !== 'pact' && !e.spells) bad.push('spells');
+      e.subclasses.forEach(function (sc) { Object.keys(sc.features).forEach(function (L) { if (e.subclassFeatureLevels.indexOf(+L) < 0 && !(id === 'druid' && sc.id === 'land' && L === '3')) bad.push(sc.id + ' L' + L); }); });
+      Object.keys(e.features).forEach(function (L) { if (+L < 1 || +L > 20) bad.push('feature L' + L); });
+    }
+    eq('class data complete: ' + id + ' ' + ed, bad, []);
+  });
+});
+eq('class codes are unique', D.CLASS_ORDER.map(function (id) { return D.CLASSES[id].code; }).filter(function (x, i, a) { return a.indexOf(x) !== i; }), []);
+var mb = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'BBBDDDDDDDDDDDDDDDDD'), ab: [15, 12, 14, 8, 14, 10], sub: { barbarian: 'totem-warrior', druid: 'moon' } });
+eq('Barbarian 3 / Druid 17 (2014): d12 first level, druid alone uses its own slot table', [mb.rows[0].hp, mb.rows[19].casterLevel, mb.saves], [14, 17, 'Strength, Constitution']);
+var ex = function (row, key) { var x = row.res.extra.filter(function (r) { return r.key === key; })[0]; return x ? x.v : null; };
+eq('Moon druid beast CR: 1 at druid 2, druid level / 3 later (2014)', [ex(mb.rows[4], 'wsCr'), ex(mb.rows[19], 'wsCr')], ['1', '5']);
+eq('Rage count and damage (2014)', [ex(mb.rows[0], 'rage'), ex(mb.rows[2], 'rage'), ex(mb.rows[2], 'rageDmg')], [2, 3, '+2']);
+eq('Druid spell DC uses Wisdom', mb.rows[19].dcs.map(function (d) { return d.abil + d.dc; }), ['wis16']);
+eq('Barbarian + caster note about casting while raging', mb.rows.some(function (r) { return r.notes.some(function (n) { return /raging/.test(n); }); }), true);
+var mb24 = E.compute(D, { ed: '2024', levels: E.decodeLevels(D, 'BBBDDDDDDDDDDDDDDDDD'), ab: [15, 12, 14, 8, 14, 10], sub: { barbarian: 'wild-heart', druid: 'moon' } });
+eq('2024 Wild Shape: CR 1/4 before the circle, Moon CR 1 at druid 3, 3 uses at druid 6, 4 at 17',
+  [ex(mb24.rows[4], 'wsCr'), ex(mb24.rows[5], 'wsCr'), ex(mb24.rows[8], 'ws'), ex(mb24.rows[19], 'ws')], ['1/4', '1', 3, 4]);
+var b5 = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'BBBBBPPPPP'), ab: [15, 10, 14, 8, 10, 13], sub: {} });
+eq('Barbarian 5 Extra Attack; Paladin 5 Extra Attack does not stack', [b5.rows[4].attacks, b5.rows[9].attacks, b5.rows[9].feats.some(function (f) { return f.name === 'Extra Attack' && /stack/.test(f.text); })], [2, 2, true]);
+var dr = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'DDDDD'), ab: [10, 10, 10, 10, 16, 10], sub: {} });
+eq('Druid 2014 prepares Wis mod + druid level', dr.rows[4].spells[0].count, 8);
+var four = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'PPWWSSBB'), ab: [13, 10, 10, 10, 10, 13], sub: {} });
+eq('a fourth class is flagged', four.warnings.some(function (w) { return /4 classes/.test(w.text); }), true);
+var oldDruid = E.buildFromChar(D, { ed: '2014', ab: [10, 10, 10, 10, 14, 10], classes: [{ cls: 'druid', lvl: 3, subName: 'Circle of the Moon' }, { cls: 'paladin', lvl: 2 }] });
+eq('a shared Druid is now real levels with its subclass matched', [E.encodeLevels(D, oldDruid.levels), oldDruid.sub, oldDruid.other], ['DDDPP', { druid: 'moon' }, []]);
+var bn = X.parse(D, (function () { var j = JSON.parse(fx); j.data.classes[3].definition.name = 'Barbarian'; return j; })(), '2014');
+eq('ddb: Barbarian levels import as real levels', [bn.other.length, bn.levels.filter(function (x) { return x === 'barbarian'; }).length], [0, 1]);
 
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

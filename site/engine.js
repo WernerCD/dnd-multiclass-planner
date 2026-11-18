@@ -63,10 +63,11 @@
     return Math.min(4, Math.ceil(Math.ceil(lv / 3) / 2));
   }
 
-  function spellsFor(D, id, lv, ed, chaMod) {
+  function spellsFor(D, id, lv, ed, mods) {
     var s = D.CLASSES[id].ed[ed].spells;
     if (!s) return 0;
-    if (s.formula === 'chaHalfDown') return lv >= 2 ? Math.max(1, chaMod + Math.floor(lv / 2)) : 0;
+    if (s.formula === 'chaHalfDown') return lv >= 2 ? Math.max(1, mods.cha + Math.floor(lv / 2)) : 0;
+    if (s.formula === 'abilLevel') return Math.max(1, mods[s.abil] + lv);
     return s.table[lv - 1];
   }
 
@@ -113,7 +114,19 @@
   function compute(D, build) {
     var ed = build.ed === '2024' ? '2024' : '2014';
     var ab = {}; ABIL.forEach(function (k, i) { ab[k] = +build.ab[i] || 10; });
-    var chaMod = mod(ab.cha), conMod = mod(ab.con);
+    var chaMod = mod(ab.cha), conMod = mod(ab.con), mods = {};
+    ABIL.forEach(function (k) { mods[k] = mod(ab[k]); });
+    var isCaster = function (cid) { var c = D.CLASSES[cid]; return c.caster && c.caster !== 'none'; };
+    // spell save DC and attack for each class that casts (by that class's ability)
+    function dcsAt(L) {
+      var out = [];
+      D.CLASS_ORDER.forEach(function (cid) {
+        if (!counts[cid] || !isCaster(cid)) return;
+        var ab0 = D.CLASSES[cid].castAbil || 'cha';
+        out.push({ cls: cid, abil: ab0, dc: 8 + profBonus(L) + mods[ab0], atk: profBonus(L) + mods[ab0] });
+      });
+      return out;
+    }
     var counts = {}; D.CLASS_ORDER.forEach(function (id) { counts[id] = 0; });
     var rows = [], hp = 0, hadExtraAttack = false, notesSeen = {};
     var seq = sequence(build), oc = {};
@@ -137,7 +150,13 @@
       });
       return a;
     }
-    function attacksAt() { return Math.max(counts.paladin >= 5 ? 2 : 1, otherAttacks()); }
+    function attacksAt() {
+      var a = otherAttacks();
+      D.CLASS_ORDER.forEach(function (cid) {
+        (D.CLASSES[cid].extraAttack || []).forEach(function (t, i) { if (counts[cid] >= t) a = Math.max(a, i + 2); });
+      });
+      return a;
+    }
 
     var maxL = Math.max(1, seq.length);
     for (var L = 1; L <= maxL; L++) {
@@ -157,7 +176,7 @@
         rows.push({ L: L, locked: true, other: o.cls, otherName: info.name, n: oc[o.cls], prof: profBonus(L), counts: c0,
           feats: lf, notes: [], slots: slotsForCasterLevel(clo.level), casterLevel: clo.level, casterParts: clo.parts,
           pact: pactAt(D, counts.warlock || 0), spells: prev ? prev.spells : [], res: prev ? prev.res : {}, hp: hp,
-          dc: 8 + profBonus(L) + chaMod, atk: profBonus(L) + chaMod, attacks: atk0 });
+          dcs: dcsAt(L), dc: 8 + profBonus(L) + chaMod, atk: profBonus(L) + chaMod, attacks: atk0 });
         continue;
       }
       var id = seq[L - 1], cls = D.CLASSES[id], ce = cls.ed[ed];
@@ -209,13 +228,13 @@
 
       var spells = [];
       D.CLASS_ORDER.forEach(function (cid) {
-        var lv = counts[cid]; if (!lv) return;
+        var lv = counts[cid]; if (!lv || !isCaster(cid)) return;
         var c = D.CLASSES[cid], e = c.ed[ed];
         spells.push({
           cls: cid, lv: lv,
           cantrips: e.cantrips ? e.cantrips[lv - 1] : 0,
-          count: spellsFor(D, cid, lv, ed, chaMod),
-          kind: e.spells.kind,
+          count: spellsFor(D, cid, lv, ed, mods),
+          kind: e.spells ? e.spells.kind : '',
           max: maxSpellLevel(D, cid, lv, ed, cid === 'warlock' ? pact : null)
         });
       });
@@ -232,6 +251,13 @@
         res.metamagic = se.metamagic[counts.sorcerer - 1];
       }
       if (counts.warlock) res.invocations = D.CLASSES.warlock.ed[ed].invocations[counts.warlock - 1];
+      res.extra = [];
+      D.CLASS_ORDER.forEach(function (cid) {
+        var lv = counts[cid], list = lv && D.CLASSES[cid].ed[ed].res;
+        if (!list) return;
+        var sid = (build.sub && build.sub[cid]) || (build.otherSub && build.otherSub[cid] && build.otherSub[cid].sub) || null;
+        list.forEach(function (r) { var v = r.at(lv, sid); if (v) res.extra.push({ key: r.key, label: r.label, title: r.title, v: v }); });
+      });
 
       // hit points (first level max, then fixed average)
       hp += Math.max(1, (L === 1 ? cls.hitDie : cls.hitDie / 2 + 1) + conMod);
@@ -256,6 +282,16 @@
         t = once('pactShare', L, 'Pact slots and regular slots can cast spells from any of your classes, but warlock levels never add to the multiclass caster level.');
         if (t) notes.push(t);
       }
+      if (counts.barbarian && D.CLASS_ORDER.some(function (cid) { return counts[cid] && isCaster(cid); })) {
+        t = once('rageCast', L, 'While raging you can\'t cast spells or keep concentration, so plan rage turns and casting turns separately.');
+        if (t) notes.push(t);
+      }
+      if (counts.barbarian && counts.druid >= 2) {
+        t = once('rageShape', L, ed === '2024'
+          ? 'Rage works in Wild Shape. 2024 Wild Shape gives temporary HP instead of a separate HP pool, and rage resistance halves damage before it reaches them. Resistances don\'t stack (see Rules notes).'
+          : 'Rage works in Wild Shape: the beast\'s HP takes damage first (halved by rage), and only the overflow reaches your own HP. Resistances don\'t stack (see Rules notes).');
+        if (t) notes.push(t);
+      }
       if (counts.warlock >= 5) {
         t = once('thirst', L, ed === '2024'
           ? 'Thirsting Blade (needs the Pact of the Blade invocation) gives an extra attack with your pact weapon. It does not stack with Extra Attack.'
@@ -276,7 +312,7 @@
       if (pact && pact.level > pactSeen) { milestones.push({ L: L, text: 'Pact slots reach ' + ORD[pact.level] + ' level (' + pact.count + ' slots)' }); pactSeen = pact.level; }
       feats.forEach(function (f) {
         var key = f.name;
-        if (/^(Extra Attack|Aura of Protection|Aura of Courage|Divine Smite|Paladin's Smite|Improved Divine Smite|Radiant Strikes|Font of Magic|Eldritch Invocations|Pact Boon|Eldritch Master|Arcane Apotheosis|Sorcerous Restoration)$/.test(key) ||
+        if (/^(Extra Attack|Rage|Wild Shape|Brutal Critical|Brutal Strike|Elemental Fury|Archdruid|Primal Champion|Aura of Protection|Aura of Courage|Divine Smite|Paladin's Smite|Improved Divine Smite|Radiant Strikes|Font of Magic|Eldritch Invocations|Pact Boon|Eldritch Master|Arcane Apotheosis|Sorcerous Restoration)$/.test(key) ||
             /^Mystic Arcanum/.test(key) || (key === 'Metamagic' && !notesSeen.mm)) {
           if (key === 'Metamagic') notesSeen.mm = L;
           milestones.push({ L: L, text: key + (key === 'Extra Attack' && f.text.indexOf("Doesn't stack") >= 0 ? ' (no extra benefit)' : '') });
@@ -288,7 +324,7 @@
         L: L, cls: id, n: n, prof: profBonus(L), counts: c2,
         feats: feats, notes: notes, slots: slots, casterLevel: cl.level, casterParts: cl.parts,
         pact: pact, spells: spells, res: res, hp: hp,
-        dc: 8 + profBonus(L) + chaMod, atk: profBonus(L) + chaMod,
+        dcs: dcsAt(L), dc: 8 + profBonus(L) + chaMod, atk: profBonus(L) + chaMod,
         attacks: attacksAt()
       });
     }
@@ -311,6 +347,9 @@
     if (counts.warlock >= 3 && ed === '2014' && !build.boon)
       warnings.push({ cls: 'warlock', soft: true, text: 'Warlock 3 gives a Pact Boon; none is chosen yet.' });
 
+    var nClasses = used.length + (build.other || []).length;
+    if (nClasses > (D.MAX_CLASSES || 3))
+      warnings.push({ text: 'This build has ' + nClasses + ' classes. The planner plans up to ' + (D.MAX_CLASSES || 3) + '; remove one to add or change classes.' });
     milestones.sort(function (a, b) { return a.L - b.L; });
     var saves = first ? D.CLASSES[first].saves : ((D.OTHER_CLASSES[firstOther.cls] || {}).saves || '');
     return { ed: ed, rows: rows, counts: counts, used: used, warnings: warnings, milestones: milestones, asis: asis, first: first, saves: saves, ab: ab,

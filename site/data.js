@@ -11,7 +11,7 @@
   var CLASSES = {
     paladin: {
       code: 'P', name: 'Paladin', short: 'Pal', hitDie: 10, color: 'pal',
-      caster: 'half',
+      caster: 'half', castAbil: 'cha', extraAttack: [5],
       prereq: { str: 13, cha: 13 },
       saves: 'Wisdom, Charisma',
       ed: {
@@ -167,7 +167,7 @@
 
     warlock: {
       code: 'W', name: 'Warlock', short: 'Lock', hitDie: 8, color: 'lock',
-      caster: 'pact',
+      caster: 'pact', castAbil: 'cha',
       prereq: { cha: 13 },
       saves: 'Wisdom, Charisma',
       pact: {
@@ -327,7 +327,7 @@
 
     sorcerer: {
       code: 'S', name: 'Sorcerer', short: 'Sorc', hitDie: 6, color: 'sorc',
-      caster: 'full',
+      caster: 'full', castAbil: 'cha',
       prereq: { cha: 13 },
       saves: 'Constitution, Charisma',
       ed: {
@@ -483,6 +483,10 @@
   };
 
   var CLASS_ORDER = ['paladin', 'warlock', 'sorcerer'];
+  // more classes live in data-classes.js (loaded first in the page, required here in Node)
+  var MORE = root.PLANNER_MORE || (typeof module !== 'undefined' && module.exports ? require('./data-classes.js') : null);
+  if (MORE) MORE.ORDER.forEach(function (id) { CLASSES[id] = MORE.CLASSES[id]; CLASS_ORDER.push(id); });
+  var MAX_CLASSES = 3; // a build mixes at most this many classes
 
   var PACT_BOONS = [
     { id: 'blade', name: 'Pact of the Blade', note: 'Summon a pact weapon; Thirsting Blade and Eldritch Smite build on it.' },
@@ -519,7 +523,13 @@
       blurb: '2014 exploit: turn short-rest pact slots into sorcery points, then into slots that last until a long rest, and stockpile them by never taking one. Most DMs ban it.' },
     { id: 'sorlockadin', name: 'Sorlockadin', ed: '2014', lv: 'PPWWWSSSSSSSSSSSSSSS',
       sub: { paladin: 'vengeance', warlock: 'hexblade', sorcerer: 'divine-soul' }, ab: [13, 10, 14, 8, 10, 16], boon: 'blade',
-      blurb: 'Paladin 2 for Divine Smite, Hexblade 3 for Cha attacks and short-rest smites, Sorcerer 15 for slots and Metamagic.' }
+      blurb: 'Paladin 2 for Divine Smite, Hexblade 3 for Cha attacks and short-rest smites, Sorcerer 15 for slots and Metamagic.' },
+    { id: 'moonbarian', name: 'Moon Barbarian', ed: '2014', lv: 'BBBDDDDDDDDDDDDDDDDD',
+      sub: { barbarian: 'totem-warrior', druid: 'moon' }, ab: [15, 12, 14, 8, 14, 10],
+      blurb: 'Barbarian 3 for Rage and the Bear totem, then Circle of the Moon for bonus-action beast forms that grow with your druid level. Rage works in beast form, but resistances don\'t stack and you can\'t cast while raging.' },
+    { id: 'moonbarian24', name: 'Moon Barbarian', ed: '2024', lv: 'BBBDDDDDDDDDDDDDDDDD',
+      sub: { barbarian: 'wild-heart', druid: 'moon' }, ab: [15, 12, 14, 8, 14, 10],
+      blurb: 'Barbarian 3 for Rage and the Wild Heart bear, then Circle of the Moon: beast forms up to druid level / 3 with temporary HP. 2024 has no Totem Warrior; Wild Heart is the nearest. Resistances don\'t stack.' }
   ];
 
   var METAMAGIC = [
@@ -539,10 +549,8 @@
      and count toward character level, proficiency, hit points, Extra Attack and the multiclass caster level. */
   var OTHER_CLASSES = {
     artificer: { name: 'Artificer', hitDie: 8, saves: 'Constitution, Intelligence', caster: 'artificer' },
-    barbarian: { name: 'Barbarian', hitDie: 12, saves: 'Strength, Constitution', extraAttack: [5] },
     bard: { name: 'Bard', hitDie: 8, saves: 'Dexterity, Charisma', caster: 'full' },
     cleric: { name: 'Cleric', hitDie: 8, saves: 'Wisdom, Charisma', caster: 'full' },
-    druid: { name: 'Druid', hitDie: 8, saves: 'Intelligence, Wisdom', caster: 'full' },
     fighter: { name: 'Fighter', hitDie: 10, saves: 'Strength, Constitution', extraAttack: [5, 11, 20], thirdSub: /eldritch knight/i },
     monk: { name: 'Monk', hitDie: 8, saves: 'Strength, Dexterity', extraAttack: [5] },
     ranger: { name: 'Ranger', hitDie: 10, saves: 'Strength, Dexterity', caster: 'half', extraAttack: [5] },
@@ -550,7 +558,7 @@
     wizard: { name: 'Wizard', hitDie: 6, saves: 'Intelligence, Wisdom', caster: 'full' }
   };
 
-  var DATA = { CLASSES: CLASSES, CLASS_ORDER: CLASS_ORDER, OTHER_CLASSES: OTHER_CLASSES, PACT_BOONS: PACT_BOONS, ED_INFO: ED_INFO, PRESETS: PRESETS, METAMAGIC: METAMAGIC };
+  var DATA = { CLASSES: CLASSES, CLASS_ORDER: CLASS_ORDER, MAX_CLASSES: MAX_CLASSES, OTHER_CLASSES: OTHER_CLASSES, PACT_BOONS: PACT_BOONS, ED_INFO: ED_INFO, PRESETS: PRESETS, METAMAGIC: METAMAGIC };
   if (typeof module !== 'undefined' && module.exports) module.exports = DATA;
   else root.PLANNER_DATA = DATA;
 })(this);

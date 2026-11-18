@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Multiclass Planner</title>
-<meta name="description" content="Plan D&amp;D 5e Paladin, Warlock and Sorcerer multiclass builds for 2014 and 2024 rules: per-level features, multiclass spell slots, Pact Magic, spells, invocations, metamagic and presets like Sorcadin, Hexadin and Sorlock.">
+<meta name="description" content="Plan D&amp;D 5e multiclass builds of up to three classes (Paladin, Warlock, Sorcerer, Druid, Barbarian) for 2014 and 2024 rules: per-level features, multiclass spell slots, Pact Magic, spells, invocations, metamagic and presets like Sorcadin, Hexadin and Sorlock.">
 <meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#12171a" media="(prefers-color-scheme: dark)">
 <link rel="canonical" href="https://wernercd.github.io/dnd-multiclass-planner/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="D&amp;D Toolbox">
 <meta property="og:title" content="Multiclass Planner">
-<meta property="og:description" content="Plan D&amp;D 5e Paladin, Warlock and Sorcerer multiclass builds for 2014 and 2024 rules: per-level features, multiclass spell slots, Pact Magic, spells, invocations, metamagic and presets like Sorcadin, Hexadin and Sorlock.">
+<meta property="og:description" content="Plan D&amp;D 5e multiclass builds of up to three classes (Paladin, Warlock, Sorcerer, Druid, Barbarian) for 2014 and 2024 rules: per-level features, multiclass spell slots, Pact Magic, spells, invocations, metamagic and presets like Sorcadin, Hexadin and Sorlock.">
 <meta property="og:url" content="https://wernercd.github.io/dnd-multiclass-planner/">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2l12 5v8c0 8-5 13-12 15C9 28 4 23 4 15V7z' fill='%23c9a227'/%3E%3C/svg%3E">
@@ -36,7 +36,7 @@
       <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2l12 5v8c0 8-5 13-12 15C9 28 4 23 4 15V7z"/></svg>
       <div>
         <h1>Multiclass Planner</h1>
-        <p class="tagline">Paladin, Warlock and Sorcerer builds for 2014 and 2024 D&amp;D 5e</p>
+        <p class="tagline">Multiclass builds of up to three classes for 2014 and 2024 D&amp;D 5e</p>
       </div>
     </div>
     <button id="themeBtn" class="icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
@@ -164,12 +164,21 @@
   <section class="card notes" aria-labelledby="n14H">
     <h2 id="n14H">Rules notes</h2>
     <ul>
-      <li><b>Prerequisites.</b> To multiclass you need the scores for both the class you are leaving and the one you are entering: Paladin Str 13 and Cha 13; Warlock Cha 13; Sorcerer Cha 13. The same in 2014 and 2024.</li>
+      <li><b>Prerequisites.</b> To multiclass you need the scores for both the class you are leaving and the one you are entering: Paladin Str 13 and Cha 13; Warlock Cha 13; Sorcerer Cha 13; Barbarian Str 13; Druid Wis 13. The same in 2014 and 2024.</li>
+      <li><b>Up to three classes.</b> The planner plans builds that mix at most three classes. A character with more still loads, but you need to remove a class before adding or changing one.</li>
       <li><b>Spells per class.</b> Each class counts its own spells known or prepared, as if single-classed, and learns spells only up to the level its own class level allows. Bigger shared slots upcast those spells.</li>
       <li><b>Extra Attack does not stack.</b> Extra Attack from two classes still means two attacks, and Thirsting Blade does not add to it.</li>
       <li><b>2014 Divine Smite</b> is not a spell: it works after any hit, even on a turn you cast a bonus-action spell, and pact slots fuel it.</li>
       <li><b>2014 bonus action spell rule.</b> If you cast a spell as a bonus action, the only other spell you can cast that turn is a cantrip with a 1-action casting time.</li>
       <li><b>Coffeelock (2014 exploit).</b> Short-rest pact slots become sorcery points, points become spell slots, and those slots last until a long rest. Skip long rests and the slots pile up. It is a reading of the 2014 rules most DMs ban, and it runs into the exhaustion rules for going without sleep; treat it as a table decision, not a build.</li>
+      <li id="resist"><b>Resistance doesn't stack.</b> Several resistances to the same damage type count once: Rage, a Bear totem or Wild Heart bear, and a resistant beast or elemental form together still halve that damage only once, never to a quarter.
+        <ul>
+          <li><b>What does stack:</b> an effect that halves damage without being resistance, such as Uncanny Dodge (Rogue 5, a reaction). It halves the hit first and resistance halves the rest, so you take about a quarter of that one hit.</li>
+          <li><b>Rage in Wild Shape:</b> rage works in beast form, but while raging you can't cast spells or concentrate on one.</li>
+          <li><b>Wild Shape hit points:</b> in 2014 damage hits the beast's HP first (halved by rage) and only the overflow carries to your own HP. In 2024 Wild Shape gives temporary HP instead, and rage halves damage before it reaches them.</li>
+          <li><b>Rage damage</b> applies only to Strength-based attacks.</li>
+        </ul>
+      </li>
       <li><b>Saving throws</b> come only from your first class. Later classes give the multiclass proficiencies shown in the table.</li>
     </ul>
     <details class="ref">
@@ -180,7 +189,7 @@
 
   <section class="about" id="about">
     <h2>About</h2>
-    <p>A planner for Paladin, Warlock and Sorcerer multiclass builds. Pick the rules edition and a class for each of the 20 levels, and the table shows what you gain, your shared spell slots, Pact Magic, spells, invocations, metamagic, feats and hit points. Builds are saved in your browser, and the share link holds the whole build.</p>
+    <p>A planner for multiclass builds of up to three classes. It covers Paladin, Warlock, Sorcerer, Druid and Barbarian, with more classes coming; levels in other classes are kept as locked levels. Pick the rules edition and a class for each of the 20 levels, and the table shows what you gain, your shared spell slots, Pact Magic, spells, invocations, metamagic, feats and hit points. Builds are saved in your browser, and the share link holds the whole build.</p>
     <p>Feature and subclass descriptions on this site are short original summaries, not rules text. Subclasses from books outside the SRD (Hexblade, Divine Soul, Clockwork Soul, Oath of Vengeance and others) are listed with their name, book and level only, with a one-line summary; the full rules are in the book named.</p>
     <p>This work includes material from the System Reference Document 5.1 and System Reference Document 5.2 by Wizards of the Coast LLC, available at <a href="https://dnd.wizards.com/resources/systems-reference-document" rel="noopener">dnd.wizards.com</a>. Both are licensed under the <a href="https://creativecommons.org/licenses/by/4.0/legalcode" rel="noopener">Creative Commons Attribution 4.0 International License</a>. Unofficial fan content; not affiliated with or endorsed by Wizards of the Coast.</p>
     <p><a href="changes.html">See what's changed</a>.</p>
@@ -208,7 +217,7 @@
       <button type="button" class="btn btn-accent" id="ddbGo">Import</button>
       <button type="submit" class="btn" value="cancel">Cancel</button>
     </div>
-    <p class="muted small">Imports Paladin, Warlock and Sorcerer levels, subclasses, ability scores and the character's name, replacing the current plan. Save the current plan first if you want to keep it.</p>
+    <p class="muted small">Imports class levels (classes the planner doesn't cover yet become locked levels), subclasses, ability scores and the character's name, replacing the current plan. Save the current plan first if you want to keep it.</p>
   </form>
 </dialog>
 
@@ -228,6 +237,7 @@
   </div>
 </footer>
 
+<script src="data-classes.js?v=dev"></script>
 <script src="data.js?v=dev"></script>
 <script src="engine.js?v=dev"></script>
 <script src="ddb.js?v=dev"></script>
