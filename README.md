@@ -1,13 +1,13 @@
 # Multiclass Planner
 
-Plan D&D 5e multiclass builds of **up to three classes** level by level, for the **2014** and **2024** rules. Covered so far: Paladin, Warlock, Sorcerer, Druid and Barbarian (more classes are being added; levels in other classes are kept as locked levels).
+Plan D&D 5e multiclass builds of **up to three classes** level by level, for the **2014** and **2024** rules. Covered so far: Artificer, Barbarian, Bard, Cleric, Druid, Paladin, Ranger, Sorcerer, Warlock and Wizard (Fighter, Monk and Rogue are next; levels in other classes are kept as locked levels).
 
 **Live:** https://wernercd.github.io/dnd-multiclass-planner/ · part of the [D&D Toolbox](https://wernercd.github.io/dnd/) · [Changes](https://wernercd.github.io/dnd-multiclass-planner/changes.html)
 
 ## Features
 - Pick the rules edition, then set levels per class (1-20 in total; builds can stop below 20). Only the classes in the build show a counter; "Add a class" adds another, up to three classes (a fourth choice is refused with the reason, in the counters, the level grid and Fill; at level 20 a new class takes over your last level). The level-order grid underneath sets which class is taken at each character level. Changing a count keeps the order and adds or removes that class's levels at the end.
-- Ability scores with multiclass prerequisite warnings: Paladin needs Str 13 and Cha 13; Warlock and Sorcerer Cha 13; Barbarian Str 13; Druid Wis 13.
-- Class resources from the class data: Rage count and damage, Wild Shape uses and highest beast CR (Circle of the Moon included), Lay on Hands, Channel Divinity, sorcery points, Metamagic, invocations. Spell save DC and attack per casting class (Druid uses Wisdom).
+- Ability scores with multiclass prerequisite warnings: Paladin needs Str 13 and Cha 13; Bard, Warlock and Sorcerer Cha 13; Barbarian Str 13; Cleric and Druid Wis 13; Ranger Dex 13 and Wis 13; Wizard and Artificer Int 13.
+- Class resources from the class data: Rage count and damage, Wild Shape uses and highest beast CR (Circle of the Moon included), Bardic Inspiration, Channel Divinity, Arcane Recovery, free Hunter's Mark casts, artificer infusions, Lay on Hands, Channel Divinity, sorcery points, Metamagic, invocations. Spell save DC and attack per casting class (Druid uses Wisdom).
 - Subclass pickers that open at the right class level (2024 moves the Sorcerer and Warlock picks to level 3), plus the 2014 Pact Boon.
 - A level-by-level table: proficiency bonus, features with short original summaries, multiclass ASIs/feats, Extra Attack (and the note that it doesn't stack), hit points.
 - **Spell slots** from the multiclass spellcaster table, counting Paladin as a half caster with each edition's rounding (2014: down, and only from paladin 2; 2024: up). A single Spellcasting class uses its own table.
@@ -28,6 +28,7 @@ The repo and site are public, so no book text is reproduced. Every feature and s
 |---|---|
 | `site/` | The static site (HTML/CSS/vanilla JS, no build step) |
 | `site/data.js` | Paladin, Warlock and Sorcerer data, presets, `OTHER_CLASSES` (locked-level fallback) and `MAX_CLASSES` |
+| `site/data-casters.js` | Bard, Cleric, Wizard, Ranger and Artificer (the Artificer is not SRD: facts only, Tasha's rules for both editions), loaded before `data.js` |
 | `site/data-classes.js` | More classes (Barbarian, Druid), loaded before `data.js`. Add a class here: unique one-letter `code`, `caster`, `castAbil`, `extraAttack`, per-edition features, subclasses and `res` (resources), then add its id to `ORDER` |
 | `site/engine.js` | The rules engine (pure functions, also loaded by Node) |
 | `site/app.js` | The page: rendering, saved builds, share links |

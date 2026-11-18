@@ -20,7 +20,7 @@
 
   function hasSpellcasting(D, id, lv, ed) {
     var c = D.CLASSES[id];
-    if (c.caster !== 'full' && c.caster !== 'half' && c.caster !== 'third') return false;
+    if (c.caster !== 'full' && c.caster !== 'half' && c.caster !== 'third' && c.caster !== 'artificer') return false;
     return lv >= (c.ed[ed].spellcastingFrom || 1);
   }
 
@@ -59,7 +59,7 @@
     if (c.caster === 'pact') return pact ? pact.level : 0;
     if (!hasSpellcasting(D, id, lv, ed)) return 0;
     if (c.caster === 'full') return Math.min(9, Math.ceil(lv / 2));
-    if (c.caster === 'half') return Math.min(5, Math.ceil(Math.ceil(lv / 2) / 2));
+    if (c.caster === 'half' || c.caster === 'artificer') return Math.min(5, Math.ceil(Math.ceil(lv / 2) / 2));
     return Math.min(4, Math.ceil(Math.ceil(lv / 3) / 2));
   }
 
@@ -68,6 +68,7 @@
     if (!s) return 0;
     if (s.formula === 'chaHalfDown') return lv >= 2 ? Math.max(1, mods.cha + Math.floor(lv / 2)) : 0;
     if (s.formula === 'abilLevel') return Math.max(1, mods[s.abil] + lv);
+    if (s.formula === 'abilHalf') return Math.max(1, mods[s.abil] + Math.floor(lv / 2));
     return s.table[lv - 1];
   }
 
@@ -154,6 +155,8 @@
       var a = otherAttacks();
       D.CLASS_ORDER.forEach(function (cid) {
         (D.CLASSES[cid].extraAttack || []).forEach(function (t, i) { if (counts[cid] >= t) a = Math.max(a, i + 2); });
+        var sc = counts[cid] && findSub(D, cid, ed, build.sub && build.sub[cid]);
+        (sc && sc.extraAttack || []).forEach(function (t, i) { if (counts[cid] >= t) a = Math.max(a, i + 2); });
       });
       return a;
     }
@@ -211,7 +214,11 @@
         else feats.push({ name: 'Choose ' + ce.subclassLabel, text: 'Pick one in the Subclasses panel.', kind: 'pick-missing', cls: id });
         milestones.push({ L: L, text: sub ? cls.name + ' subclass: ' + sub.name : cls.name + ' subclass pick (not chosen)' });
       }
-      if (sub && sub.features[n]) sub.features[n].forEach(function (f) { feats.push({ name: f[0], text: f[1], kind: 'sub' }); });
+      if (sub && sub.features[n]) sub.features[n].forEach(function (f) {
+        var it = { name: f[0], text: f[1], kind: 'sub' };
+        if (f[0] === 'Extra Attack') { if (hadExtraAttack || otherAttacks() > 1) it.text += " Doesn't stack with Extra Attack from another class."; hadExtraAttack = true; }
+        feats.push(it);
+      });
       else if (!sub && n !== ce.subclassLevel && ce.subclassFeatureLevels.indexOf(n) >= 0 && n > ce.subclassLevel)
         feats.push({ name: 'Subclass feature', text: 'From your ' + (osub ? osub.subName : ce.subclassLabel.toLowerCase()) + '.', kind: 'sub' });
 
@@ -256,7 +263,7 @@
         var lv = counts[cid], list = lv && D.CLASSES[cid].ed[ed].res;
         if (!list) return;
         var sid = (build.sub && build.sub[cid]) || (build.otherSub && build.otherSub[cid] && build.otherSub[cid].sub) || null;
-        list.forEach(function (r) { var v = r.at(lv, sid); if (v) res.extra.push({ key: r.key, label: r.label, title: r.title, v: v }); });
+        list.forEach(function (r) { var v = r.at(lv, sid, mods); if (v) res.extra.push({ key: r.key, label: r.label, title: r.title, v: v }); });
       });
 
       // hit points (first level max, then fixed average)

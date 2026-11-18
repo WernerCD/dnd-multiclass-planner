@@ -118,8 +118,8 @@ eq('character classes in first-taken order', E.charClasses(D, cb), [
   { cls: 'warlock', lvl: 3, sub: 'hexblade', subName: hexName },
   { cls: 'sorcerer', lvl: 4, sub: null, subName: null }]);
 var fc = E.buildFromChar(D, { name: 'Aric', ed: '2024', ab: [15, 10, 14, 8, 10, 16], classes: [
-  { cls: 'sorcerer', lvl: 3, sub: 'x-other-site-id', subName: 'Clockwork Sorcery' }, { cls: 'cleric', lvl: 2 }, { cls: 'paladin', lvl: 2, sub: null, subName: null }] });
-eq('character -> build: levels in class order, unknown classes locked', [E.encodeLevels(D, fc.levels), fc.other.map(function (o) { return o.cls + o.lvl; }), fc.otherFirst, fc.show], ['SSSPP', ['cleric2'], false, 7]);
+  { cls: 'sorcerer', lvl: 3, sub: 'x-other-site-id', subName: 'Clockwork Sorcery' }, { cls: 'mystic', lvl: 2 }, { cls: 'paladin', lvl: 2, sub: null, subName: null }] });
+eq('character -> build: levels in class order, unknown classes locked', [E.encodeLevels(D, fc.levels), fc.other.map(function (o) { return o.cls + o.lvl; }), fc.otherFirst, fc.show], ['SSSPP', ['mystic2'], false, 7]);
 eq('character -> build: subclass matched by name when ids differ', fc.sub, { sorcerer: 'clockwork' });
 eq('character round trip', E.charClasses(D, E.buildFromChar(D, { ed: '2014', classes: E.charClasses(D, cb) })), E.charClasses(D, cb));
 eq('sameClasses ignores class order', [E.sameClasses([{ cls: 'a', lvl: 1 }, { cls: 'b', lvl: 2 }], [{ cls: 'b', lvl: 2 }, { cls: 'a', lvl: 1 }]), E.sameClasses([{ cls: 'a', lvl: 1 }], [{ cls: 'a', lvl: 2 }])], [true, false]);
@@ -132,8 +132,8 @@ eq('Fighter 5 / Paladin 15: HP uses d10 for the fighter levels', rp.rows[0].hp, 
 eq('Fighter 5 / Paladin 15: Extra Attack from fighter 5; paladin 5 says it does not stack',
   [rp.rows[4].attacks, rp.rows[9].feats.some(function (f) { return f.name === 'Extra Attack' && /stack/.test(f.text); })], [2, true]);
 eq('Fighter 5 / Paladin 15: paladin alone uses its own table (caster level 8 at paladin 15)', rp.rows[19].casterLevel, 8);
-var cw = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'SSSSS'), ab: [10, 10, 10, 10, 10, 16], sub: {}, other: [{ cls: 'cleric', lvl: 5 }], otherFirst: true });
-eq('Cleric 5 / Sorcerer 5: cleric levels add to the multiclass caster level', cw.rows[9].casterLevel, 10);
+var cw = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'CCCCCSSSSS'), ab: [10, 10, 10, 10, 10, 16], sub: {} });
+eq('Cleric 5 / Sorcerer 5: both full casters add to the multiclass caster level', cw.rows[9].casterLevel, 10);
 var ds = E.buildFromChar(D, { ed: '2024', ab: [10, 10, 10, 10, 10, 16], classes: [{ cls: 'sorcerer', lvl: 6, sub: 'divine-soul', subName: 'Divine Soul' }] });
 eq('unknown 2024 subclass (Divine Soul) is kept as otherSub', [ds.sub, ds.otherSub], [{}, { sorcerer: { sub: 'divine-soul', subName: 'Divine Soul' } }]);
 eq('otherSub round-trips into the shared classes', E.charClasses(D, ds), [{ cls: 'sorcerer', lvl: 6, sub: 'divine-soul', subName: 'Divine Soul' }]);
@@ -184,6 +184,25 @@ var oldDruid = E.buildFromChar(D, { ed: '2014', ab: [10, 10, 10, 10, 14, 10], cl
 eq('a shared Druid is now real levels with its subclass matched', [E.encodeLevels(D, oldDruid.levels), oldDruid.sub, oldDruid.other], ['DDDPP', { druid: 'moon' }, []]);
 var bn = X.parse(D, (function () { var j = JSON.parse(fx); j.data.classes[3].definition.name = 'Barbarian'; return j; })(), '2014');
 eq('ddb: Barbarian levels import as real levels', [bn.other.length, bn.levels.filter(function (x) { return x === 'barbarian'; }).length], [0, 1]);
+
+// ---------- stage 2: Bard, Cleric, Wizard, Ranger, Artificer ----------
+var exr = function (row, key) { var x = row.res.extra.filter(function (r) { return r.key === key; })[0]; return x ? x.v : null; };
+var r14 = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'RRRRRRRRRR'), ab: [10, 16, 12, 10, 14, 10], sub: {} });
+eq('Ranger 2014: no spells at 1, half caster from 2, Extra Attack at 5', [r14.rows[0].casterLevel, r14.rows[1].casterLevel, r14.rows[4].casterLevel, r14.rows[4].attacks, r14.rows[9].spells[0].count], [0, 1, 3, 2, 6]);
+var rp14 = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'RRRRRPPPPP'), ab: [13, 16, 12, 10, 14, 13], sub: {} });
+eq('Ranger 5 / Paladin 5 (2014): two half casters round down, 2 + 2 = caster level 4', rp14.rows[9].casterLevel, 4);
+var rp24 = E.compute(D, { ed: '2024', levels: E.decodeLevels(D, 'RRRRRPPPPP'), ab: [13, 16, 12, 10, 14, 13], sub: {} });
+eq('Ranger 5 / Paladin 5 (2024): round up, 3 + 3 = caster level 6', rp24.rows[9].casterLevel, 6);
+var ar = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'AAAWWWWWWW'), ab: [10, 14, 14, 16, 10, 10], sub: { artificer: 'battle-smith' } });
+eq('Artificer 1 casts (caster level 1); artificer 3 alone is caster level 2; prepared Int + half level', [ar.rows[0].casterLevel, ar.rows[2].casterLevel, ar.rows[2].spells[0].count], [1, 2, 4]);
+var ar5 = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'AAAAAPPPPP'), ab: [13, 14, 14, 16, 10, 13], sub: { artificer: 'battle-smith' } });
+eq('Artificer rounds up even when multiclassed: Art 5 + Pal 5 (2014) = 3 + 2', ar5.rows[9].casterLevel, 5);
+eq('Battle Smith Extra Attack at artificer 5; Paladin 5 note says it does not stack', [ar5.rows[4].attacks, ar5.rows[9].feats.some(function (f) { return f.name === 'Extra Attack' && /stack/.test(f.text); })], [2, true]);
+var vb = E.compute(D, { ed: '2024', levels: E.decodeLevels(D, 'VVVVVV'), ab: [10, 14, 12, 10, 10, 16], sub: { bard: 'valor' } });
+eq('Valor bard: Extra Attack at bard 6; Inspiration Cha uses and die', [vb.rows[5].attacks, exr(vb.rows[4], 'insp')], [2, '3 x d8']);
+var cl = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'CCCCCCZZZZ'), ab: [10, 10, 14, 16, 16, 10], sub: { cleric: 'light', wizard: 'evocation' } });
+eq('Cleric 6 / Wizard 4: DCs by Wis and Int; Channel Divinity 2; Arcane Recovery 2 levels', [cl.rows[9].dcs.map(function (d) { return d.abil + d.dc; }).join(' '), exr(cl.rows[9], 'clrCd'), exr(cl.rows[9], 'recov'), cl.rows[9].casterLevel], ['wis15 int15', 2, '2 lvls', 10]);
+eq('Cleric 2014 subclass at level 1 (Light domain features from 1)', cl.rows[0].feats.some(function (f) { return /Warding Flare/.test(f.name); }), true);
 
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

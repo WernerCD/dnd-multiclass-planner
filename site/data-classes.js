@@ -274,5 +274,5 @@
   var ORDER = ['barbarian', 'druid'];
   var API = { CLASSES: MORE, ORDER: ORDER };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
-  else root.PLANNER_MORE = API;
+  else (root.PLANNER_MORE_LIST = root.PLANNER_MORE_LIST || []).push(API);
 })(this);
