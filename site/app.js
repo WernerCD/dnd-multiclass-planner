@@ -116,7 +116,9 @@
       other: other, otherFirst: p.get('of') !== '0', boon: p.get('boon'), name: p.get('n'), show: p.get('at') });
   }
   function syncUrl() {
-    try { history.replaceState(null, '', location.pathname + toQuery(state)); } catch (e) { /* file:// or sandbox */ }
+    // keep ?sw=1 (offline.js reads it after this script runs; the smoke test's offline check uses it)
+    var sw = /[?&]sw=1\b/.test(location.search) ? '&sw=1' : '';
+    try { history.replaceState(null, '', location.pathname + toQuery(state) + sw); } catch (e) { /* file:// or sandbox */ }
     store.set('mcp.current', state);
     schedulePush();
   }

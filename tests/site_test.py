@@ -55,3 +55,9 @@ def run(page, base, check):
         check(page.locator("#importNote").is_visible(), "[planner] D&D Beyond paste import shows its notes")
         check("lv=PPWWWSSSSF" in page.evaluate("location.search"), "[planner] D&D Beyond import builds the levels (starting class first)")
     page.evaluate("localStorage.clear()")
+
+    # hub search links (search.json) open the planner with that class and subclass picked
+    go("?ed=2024&lv=PPP&sub=P.devotion")
+    check(page.locator("#sub-paladin").input_value() == "devotion" and page.locator("#tbody tr").count() == 3,
+          "[planner] a hub search link opens Paladin 3 with Oath of Devotion picked")
+    page.evaluate("localStorage.clear()")

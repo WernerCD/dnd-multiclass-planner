@@ -1,0 +1,845 @@
+{
+ "v": 1,
+ "items": [
+  {
+   "n": "Paladin",
+   "t": "d10 Hit Die, half caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=P"
+  },
+  {
+   "n": "Oath of Devotion",
+   "t": "Paladin subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=PPP&sub=P.devotion"
+  },
+  {
+   "n": "Oath of the Ancients",
+   "t": "Paladin subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=PPP&sub=P.ancients"
+  },
+  {
+   "n": "Oath of Vengeance",
+   "t": "Paladin subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=PPP&sub=P.vengeance"
+  },
+  {
+   "n": "Oath of Conquest",
+   "t": "Paladin subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=PPP&sub=P.conquest"
+  },
+  {
+   "n": "Oath of Redemption",
+   "t": "Paladin subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=PPP&sub=P.redemption"
+  },
+  {
+   "n": "Oath of Glory",
+   "t": "Paladin subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=PPP&sub=P.glory"
+  },
+  {
+   "n": "Oath of the Watchers",
+   "t": "Paladin subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=PPP&sub=P.watchers"
+  },
+  {
+   "n": "Oathbreaker",
+   "t": "Paladin subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=PPP&sub=P.oathbreaker"
+  },
+  {
+   "n": "Oath of the Crown",
+   "t": "Paladin subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=PPP&sub=P.crown"
+  },
+  {
+   "n": "Warlock",
+   "t": "d8 Hit Die, Pact Magic, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=W"
+  },
+  {
+   "n": "The Fiend",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.fiend"
+  },
+  {
+   "n": "The Archfey",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.archfey"
+  },
+  {
+   "n": "The Great Old One",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.great-old-one"
+  },
+  {
+   "n": "The Celestial",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.celestial"
+  },
+  {
+   "n": "The Hexblade",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.hexblade"
+  },
+  {
+   "n": "The Fathomless",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.fathomless"
+  },
+  {
+   "n": "The Genie",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.genie"
+  },
+  {
+   "n": "The Undead",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.undead"
+  },
+  {
+   "n": "The Undying",
+   "t": "Warlock subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=W&sub=W.undying"
+  },
+  {
+   "n": "Fiend Patron",
+   "t": "Warlock subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=WWW&sub=W.fiend"
+  },
+  {
+   "n": "Archfey Patron",
+   "t": "Warlock subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=WWW&sub=W.archfey"
+  },
+  {
+   "n": "Celestial Patron",
+   "t": "Warlock subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=WWW&sub=W.celestial"
+  },
+  {
+   "n": "Great Old One Patron",
+   "t": "Warlock subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=WWW&sub=W.great-old-one"
+  },
+  {
+   "n": "Sorcerer",
+   "t": "d6 Hit Die, full caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=S"
+  },
+  {
+   "n": "Draconic Bloodline",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.draconic"
+  },
+  {
+   "n": "Wild Magic",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.wild-magic"
+  },
+  {
+   "n": "Divine Soul",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.divine-soul"
+  },
+  {
+   "n": "Shadow Magic",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.shadow"
+  },
+  {
+   "n": "Storm Sorcery",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.storm"
+  },
+  {
+   "n": "Aberrant Mind",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.aberrant"
+  },
+  {
+   "n": "Clockwork Soul",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.clockwork"
+  },
+  {
+   "n": "Lunar Sorcery",
+   "t": "Sorcerer subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=S&sub=S.lunar"
+  },
+  {
+   "n": "Draconic Sorcery",
+   "t": "Sorcerer subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=SSS&sub=S.draconic"
+  },
+  {
+   "n": "Aberrant Sorcery",
+   "t": "Sorcerer subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=SSS&sub=S.aberrant"
+  },
+  {
+   "n": "Clockwork Sorcery",
+   "t": "Sorcerer subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=SSS&sub=S.clockwork"
+  },
+  {
+   "n": "Wild Magic Sorcery",
+   "t": "Sorcerer subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=SSS&sub=S.wild-magic"
+  },
+  {
+   "n": "Barbarian",
+   "t": "d12 Hit Die, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=B"
+  },
+  {
+   "n": "Path of the Berserker",
+   "t": "Barbarian subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=BBB&sub=B.berserker"
+  },
+  {
+   "n": "Path of the Totem Warrior",
+   "t": "Barbarian subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=BBB&sub=B.totem-warrior"
+  },
+  {
+   "n": "Path of the Ancestral Guardian",
+   "t": "Barbarian subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=BBB&sub=B.ancestral-guardian"
+  },
+  {
+   "n": "Path of the Storm Herald",
+   "t": "Barbarian subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=BBB&sub=B.storm-herald"
+  },
+  {
+   "n": "Path of the Zealot",
+   "t": "Barbarian subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=BBB&sub=B.zealot"
+  },
+  {
+   "n": "Path of the Beast",
+   "t": "Barbarian subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=BBB&sub=B.beast"
+  },
+  {
+   "n": "Path of Wild Magic",
+   "t": "Barbarian subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=BBB&sub=B.wild-magic"
+  },
+  {
+   "n": "Path of the Wild Heart",
+   "t": "Barbarian subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=BBB&sub=B.wild-heart"
+  },
+  {
+   "n": "Path of the World Tree",
+   "t": "Barbarian subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=BBB&sub=B.world-tree"
+  },
+  {
+   "n": "Druid",
+   "t": "d8 Hit Die, full caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=D"
+  },
+  {
+   "n": "Circle of the Land",
+   "t": "Druid subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=DDD&sub=D.land"
+  },
+  {
+   "n": "Circle of the Moon",
+   "t": "Druid subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=DDD&sub=D.moon"
+  },
+  {
+   "n": "Circle of Dreams",
+   "t": "Druid subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=DD&sub=D.dreams"
+  },
+  {
+   "n": "Circle of the Shepherd",
+   "t": "Druid subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=DD&sub=D.shepherd"
+  },
+  {
+   "n": "Circle of Spores",
+   "t": "Druid subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=DD&sub=D.spores"
+  },
+  {
+   "n": "Circle of Stars",
+   "t": "Druid subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=DD&sub=D.stars"
+  },
+  {
+   "n": "Circle of Wildfire",
+   "t": "Druid subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=DD&sub=D.wildfire"
+  },
+  {
+   "n": "Circle of the Sea",
+   "t": "Druid subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=DDD&sub=D.sea"
+  },
+  {
+   "n": "Circle of the Stars",
+   "t": "Druid subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=DDD&sub=D.stars"
+  },
+  {
+   "n": "Bard",
+   "t": "d8 Hit Die, full caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=V"
+  },
+  {
+   "n": "College of Lore",
+   "t": "Bard subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=VVV&sub=V.lore"
+  },
+  {
+   "n": "College of Valor",
+   "t": "Bard subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=VVV&sub=V.valor"
+  },
+  {
+   "n": "College of Glamour",
+   "t": "Bard subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=VVV&sub=V.glamour"
+  },
+  {
+   "n": "College of Swords",
+   "t": "Bard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=VVV&sub=V.swords"
+  },
+  {
+   "n": "College of Whispers",
+   "t": "Bard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=VVV&sub=V.whispers"
+  },
+  {
+   "n": "College of Creation",
+   "t": "Bard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=VVV&sub=V.creation"
+  },
+  {
+   "n": "College of Eloquence",
+   "t": "Bard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=VVV&sub=V.eloquence"
+  },
+  {
+   "n": "College of Dance",
+   "t": "Bard subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=VVV&sub=V.dance"
+  },
+  {
+   "n": "Cleric",
+   "t": "d8 Hit Die, full caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=C"
+  },
+  {
+   "n": "Life Domain",
+   "t": "Cleric subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=CCC&sub=C.life"
+  },
+  {
+   "n": "Knowledge Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.knowledge"
+  },
+  {
+   "n": "Light Domain",
+   "t": "Cleric subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=CCC&sub=C.light"
+  },
+  {
+   "n": "Nature Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.nature"
+  },
+  {
+   "n": "Tempest Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.tempest"
+  },
+  {
+   "n": "Trickery Domain",
+   "t": "Cleric subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=CCC&sub=C.trickery"
+  },
+  {
+   "n": "War Domain",
+   "t": "Cleric subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=CCC&sub=C.war"
+  },
+  {
+   "n": "Forge Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.forge"
+  },
+  {
+   "n": "Grave Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.grave"
+  },
+  {
+   "n": "Order Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.order"
+  },
+  {
+   "n": "Peace Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.peace"
+  },
+  {
+   "n": "Twilight Domain",
+   "t": "Cleric subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=C&sub=C.twilight"
+  },
+  {
+   "n": "Wizard",
+   "t": "d6 Hit Die, full caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=Z"
+  },
+  {
+   "n": "School of Evocation",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.evocation"
+  },
+  {
+   "n": "School of Abjuration",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.abjuration"
+  },
+  {
+   "n": "School of Conjuration",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.conjuration"
+  },
+  {
+   "n": "School of Divination",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.divination"
+  },
+  {
+   "n": "School of Enchantment",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.enchantment"
+  },
+  {
+   "n": "School of Illusion",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.illusion"
+  },
+  {
+   "n": "School of Necromancy",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.necromancy"
+  },
+  {
+   "n": "School of Transmutation",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.transmutation"
+  },
+  {
+   "n": "School of War Magic",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.war-magic"
+  },
+  {
+   "n": "Bladesinging",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.bladesinging"
+  },
+  {
+   "n": "Order of Scribes",
+   "t": "Wizard subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=ZZ&sub=Z.scribes"
+  },
+  {
+   "n": "Evoker",
+   "t": "Wizard subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=ZZZ&sub=Z.evoker"
+  },
+  {
+   "n": "Abjurer",
+   "t": "Wizard subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=ZZZ&sub=Z.abjurer"
+  },
+  {
+   "n": "Diviner",
+   "t": "Wizard subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=ZZZ&sub=Z.diviner"
+  },
+  {
+   "n": "Illusionist",
+   "t": "Wizard subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=ZZZ&sub=Z.illusionist"
+  },
+  {
+   "n": "Ranger",
+   "t": "d10 Hit Die, half caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=R"
+  },
+  {
+   "n": "Hunter",
+   "t": "Ranger subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=RRR&sub=R.hunter"
+  },
+  {
+   "n": "Beast Master",
+   "t": "Ranger subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=RRR&sub=R.beast-master"
+  },
+  {
+   "n": "Gloom Stalker",
+   "t": "Ranger subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=RRR&sub=R.gloom-stalker"
+  },
+  {
+   "n": "Horizon Walker",
+   "t": "Ranger subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=RRR&sub=R.horizon-walker"
+  },
+  {
+   "n": "Monster Slayer",
+   "t": "Ranger subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=RRR&sub=R.monster-slayer"
+  },
+  {
+   "n": "Fey Wanderer",
+   "t": "Ranger subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=RRR&sub=R.fey-wanderer"
+  },
+  {
+   "n": "Swarmkeeper",
+   "t": "Ranger subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=RRR&sub=R.swarmkeeper"
+  },
+  {
+   "n": "Artificer",
+   "t": "d8 Hit Die, half caster, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=A"
+  },
+  {
+   "n": "Alchemist",
+   "t": "Artificer subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=AAA&sub=A.alchemist"
+  },
+  {
+   "n": "Armorer",
+   "t": "Artificer subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=AAA&sub=A.armorer"
+  },
+  {
+   "n": "Artillerist",
+   "t": "Artificer subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=AAA&sub=A.artillerist"
+  },
+  {
+   "n": "Battle Smith",
+   "t": "Artificer subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=AAA&sub=A.battle-smith"
+  },
+  {
+   "n": "Fighter",
+   "t": "d10 Hit Die, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=F"
+  },
+  {
+   "n": "Champion",
+   "t": "Fighter subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=FFF&sub=F.champion"
+  },
+  {
+   "n": "Battle Master",
+   "t": "Fighter subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=FFF&sub=F.battle-master"
+  },
+  {
+   "n": "Eldritch Knight",
+   "t": "Fighter subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=FFF&sub=F.eldritch-knight"
+  },
+  {
+   "n": "Arcane Archer",
+   "t": "Fighter subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=FFF&sub=F.arcane-archer"
+  },
+  {
+   "n": "Cavalier",
+   "t": "Fighter subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=FFF&sub=F.cavalier"
+  },
+  {
+   "n": "Samurai",
+   "t": "Fighter subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=FFF&sub=F.samurai"
+  },
+  {
+   "n": "Psi Warrior",
+   "t": "Fighter subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=FFF&sub=F.psi-warrior"
+  },
+  {
+   "n": "Rune Knight",
+   "t": "Fighter subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=FFF&sub=F.rune-knight"
+  },
+  {
+   "n": "Rogue",
+   "t": "d8 Hit Die, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=T"
+  },
+  {
+   "n": "Thief",
+   "t": "Rogue subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=TTT&sub=T.thief"
+  },
+  {
+   "n": "Arcane Trickster",
+   "t": "Rogue subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=TTT&sub=T.arcane-trickster"
+  },
+  {
+   "n": "Assassin",
+   "t": "Rogue subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=TTT&sub=T.assassin"
+  },
+  {
+   "n": "Inquisitive",
+   "t": "Rogue subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=TTT&sub=T.inquisitive"
+  },
+  {
+   "n": "Mastermind",
+   "t": "Rogue subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=TTT&sub=T.mastermind"
+  },
+  {
+   "n": "Scout",
+   "t": "Rogue subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=TTT&sub=T.scout"
+  },
+  {
+   "n": "Swashbuckler",
+   "t": "Rogue subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=TTT&sub=T.swashbuckler"
+  },
+  {
+   "n": "Phantom",
+   "t": "Rogue subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=TTT&sub=T.phantom"
+  },
+  {
+   "n": "Soulknife",
+   "t": "Rogue subclass, 2014 and 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=TTT&sub=T.soulknife"
+  },
+  {
+   "n": "Monk",
+   "t": "d8 Hit Die, 2014 and 2024",
+   "k": "Class",
+   "u": "?ed=2024&lv=M"
+  },
+  {
+   "n": "Way of the Open Hand",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.open-hand"
+  },
+  {
+   "n": "Way of Shadow",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.shadow"
+  },
+  {
+   "n": "Way of the Four Elements",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.four-elements"
+  },
+  {
+   "n": "Way of the Drunken Master",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.drunken-master"
+  },
+  {
+   "n": "Way of the Kensei",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.kensei"
+  },
+  {
+   "n": "Way of the Sun Soul",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.sun-soul"
+  },
+  {
+   "n": "Way of Mercy",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.mercy"
+  },
+  {
+   "n": "Way of the Astral Self",
+   "t": "Monk subclass, 2014",
+   "k": "Subclass",
+   "u": "?ed=2014&lv=MMM&sub=M.astral-self"
+  },
+  {
+   "n": "Warrior of the Open Hand",
+   "t": "Monk subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=MMM&sub=M.open-hand"
+  },
+  {
+   "n": "Warrior of Mercy",
+   "t": "Monk subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=MMM&sub=M.mercy"
+  },
+  {
+   "n": "Warrior of Shadow",
+   "t": "Monk subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=MMM&sub=M.shadow"
+  },
+  {
+   "n": "Warrior of the Elements",
+   "t": "Monk subclass, 2024",
+   "k": "Subclass",
+   "u": "?ed=2024&lv=MMM&sub=M.elements"
+  }
+ ]
+}

@@ -252,5 +252,11 @@ var bb = E.buildFromChar(D, { ed: brin.ed, ab: brin.ab, name: brin.name, classes
 var br = E.compute(D, bb);
 eq('hub import sample: starting class first, Devotion matched, level 7, paladin saves', [E.encodeLevels(D, bb.levels), bb.sub, br.rows.length, br.saves, br.warnings.length], ['PPPPPWW', { paladin: 'devotion' }, 7, 'Wisdom, Charisma', 0]);
 
+// ---------- hub search list (site/search.json, STYLE.md 6j) ----------
+var MS = require(path.join(__dirname, 'make_search.js'));
+eq('search.json is current (run node tools/make_search.js)', require('fs').readFileSync(path.join(__dirname, '..', 'site', 'search.json'), 'utf8').replace(/\r\n/g, '\n') === MS.text(), true);
+var srch = MS.build().items;
+eq('search.json: 13 classes, no repeated names', [srch.filter(function (i) { return i.k === 'Class'; }).length, srch.length === Object.keys(srch.reduce(function (a, i) { a[i.n] = 1; return a; }, {})).length], [13, true]);
+eq('search.json: a subclass link opens that class at its subclass level with it picked', srch.filter(function (i) { return i.n === 'Oath of Devotion'; })[0].u, '?ed=2024&lv=PPP&sub=P.devotion');
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);
