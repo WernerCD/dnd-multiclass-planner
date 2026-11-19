@@ -270,6 +270,7 @@
     renderMilestones(r);
     renderCombine(r);
     renderTable(r);
+    renderCharts(r);
     syncUrl();
     renderChar();
   }
@@ -378,7 +379,8 @@
       cell.className = 'lv c-' + state.levels[j] + (off + j + 1 > state.show ? ' future' : '');
     }
     var last = r.rows[r.rows.length - 1].counts;
-    $('split').innerHTML = 'Level ' + (len + locked) + ' / 20';
+    if (!$('splitN')) $('split').innerHTML = 'Level <span id="splitN">' + (len + locked) + '</span> / 20';
+    if (window.DndUI) DndUI.count($('splitN'), len + locked); else $('splitN').textContent = len + locked;
     var lockedSteps = state.other.map(function (o) {
       return '<div class="step locked"><span class="step-name">' + esc(otherName(o.cls)) + (o.subName ? ' <small>(' + esc(o.subName) + ')</small>' : '') + '</span>' +
         '<div class="step-ctl"><span class="lock-n" title="Locked: a class the planner does not model">' + o.lvl + ' <small>locked</small></span>' +
@@ -465,6 +467,26 @@
     if (out.length === 1) return out[0].d.dc + ' / ' + sgn(out[0].d.atk);
     return out.map(function (x) { return '<span class="dc-part">' + x.d.dc + ' / ' + sgn(x.d.atk) + ' <small class="muted">' + esc(ABIL_NAME[x.d.abil] + ', ' + x.names.join(' & ')) + '</small></span>'; }).join(' ');
   }
+  // two small step charts: slots (spell + pact, same scale) and hit points (their own scale)
+  var slotPlot = null, hpPlot = null;
+  function renderCharts(r) {
+    if (!window.DndPlot) return;
+    var labels = r.rows.map(function (row) { return row.L; });
+    var spell = r.rows.map(function (row) { return row.slots.reduce(function (a, b) { return a + b; }, 0); });
+    var pact = r.rows.map(function (row) { return row.pact ? row.pact.count : 0; });
+    var series = [];
+    if (spell.some(Boolean)) series.push({ name: 'Spell slots', values: spell });
+    if (pact.some(Boolean)) series.push({ name: 'Pact slots', values: pact });
+    $('slotNone').hidden = !!series.length;
+    $('slotChart').hidden = !series.length;
+    if (series.length) {
+      var so = { labels: labels, series: series, curve: 'step', xLabel: 'Character level', yLabel: 'Slots', title: 'Spell and pact slots by character level' };
+      if (slotPlot) slotPlot.update(so); else slotPlot = DndPlot.line($('slotChart'), so);
+    }
+    var ho = { labels: labels, series: [{ name: 'Hit points (average)', values: r.rows.map(function (row) { return row.hp; }) }], curve: 'step', area: true,
+      xLabel: 'Character level', yLabel: 'HP', title: 'Average hit points by character level' };
+    if (hpPlot) hpPlot.update(ho); else hpPlot = DndPlot.line($('hpChart'), ho);
+  }
   function renderSummary(r) {
     var row = r.rows[state.show - 1];
     $('showOut').textContent = state.show;
@@ -542,7 +564,11 @@
       : '<option value="">None saved</option>';
   }
   var toastT;
-  function toast(msg) { $('toast').textContent = msg; clearTimeout(toastT); toastT = setTimeout(function () { $('toast').textContent = ''; }, 3500); }
+  function toast(msg) {
+    var t = $('toast'), was = t.textContent;
+    t.textContent = msg; clearTimeout(toastT); toastT = setTimeout(function () { t.textContent = ''; }, 3500);
+    if (msg && !was && window.DndUI) DndUI.enter(t);
+  }
 
   var SHORT_MSG = 'Short ddb.ac links can\'t be read from here. Open the link in your browser, then paste the dndbeyond.com/characters/... address it takes you to.';
 
@@ -623,12 +649,13 @@
       $('ddbDlg').close(); $('ddbJson').value = '';
       $('importBody').innerHTML = '<p><b>Imported ' + esc(state.name) + ' (level ' + res.total + ').</b></p><ul>' + res.notices.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
       $('importNote').hidden = false;
+      if (window.DndUI) DndUI.enter($('importNote'));
       render(); return;
     }
     if (t.id === 'shareBtn') {
       syncUrl();
       var url = location.origin + location.pathname + toQuery(state);
-      var done = function () { toast('Share link copied.'); };
+      var done = function () { toast('Share link copied.'); if (window.DndUI) DndUI.pop(t); };
       try { navigator.clipboard.writeText(url).then(done, function () { prompt('Copy this link:', url); }); }
       catch (e) { prompt('Copy this link:', url); }
     }

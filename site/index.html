@@ -76,7 +76,7 @@
   <p class="wrap toast" id="toast" role="status" aria-live="polite"></p>
 </section>
 
-<main class="wrap">
+<main class="wrap" data-reveal>
   <p class="preset-blurb" id="presetBlurb" hidden></p>
   <div class="char-bar" id="charBar" aria-live="polite"></div>
   <div class="import-note" id="importNote" hidden>
@@ -84,7 +84,7 @@
     <div id="importBody"></div>
   </div>
 
-  <section class="card" aria-labelledby="lvH">
+  <section class="card" data-spot aria-labelledby="lvH">
     <div class="card-head">
       <h2 id="lvH">Class levels</h2>
       <p class="split" id="split"></p>
@@ -104,19 +104,19 @@
   </section>
 
   <div class="grid2">
-    <section class="card" aria-labelledby="abH">
+    <section class="card" data-spot aria-labelledby="abH">
       <h2 id="abH">Ability scores</h2>
       <div class="abil" id="abil"></div>
       <div id="warn" class="warn-list"></div>
     </section>
 
-    <section class="card" aria-labelledby="subH">
+    <section class="card" data-spot aria-labelledby="subH">
       <h2 id="subH">Subclasses</h2>
       <div id="subs" class="subs"></div>
     </section>
   </div>
 
-  <section class="card" aria-labelledby="sumH">
+  <section class="card" data-spot aria-labelledby="sumH">
     <div class="card-head">
       <h2 id="sumH">At level <output id="showOut">20</output></h2>
       <input type="range" id="show" min="1" max="20" value="20" aria-label="Show the build at character level">
@@ -124,12 +124,27 @@
     <div class="stats" id="stats"></div>
   </section>
 
+  <section class="card" data-spot aria-labelledby="chH">
+    <h2 id="chH">The build by level</h2>
+    <div class="grid2 charts">
+      <div>
+        <h3 id="slotChH">Spell slots</h3>
+        <div id="slotChart"></div>
+        <p class="muted small chart-none" id="slotNone" hidden>No spell slots or pact slots in this build.</p>
+      </div>
+      <div>
+        <h3 id="hpChH">Hit points</h3>
+        <div id="hpChart"></div>
+      </div>
+    </div>
+  </section>
+
   <div class="grid2">
-    <section class="card" aria-labelledby="msH">
+    <section class="card" data-spot aria-labelledby="msH">
       <h2 id="msH">Milestones</h2>
       <ol class="ms" id="milestones"></ol>
     </section>
-    <section class="card" aria-labelledby="cbH">
+    <section class="card" data-spot aria-labelledby="cbH">
       <h2 id="cbH">How this build combines</h2>
       <ul class="cb" id="combine"></ul>
     </section>
@@ -146,7 +161,7 @@
     </div>
   </section>
 
-  <section class="card notes" id="notes2024" aria-labelledby="n24H">
+  <section class="card notes" data-spot id="notes2024" aria-labelledby="n24H">
     <h2 id="n24H">What changed in 2024</h2>
     <ul>
       <li><b>Divine Smite is a spell.</b> It is a 1st-level paladin spell cast as a bonus action right after you hit with a melee weapon or unarmed strike. Because it uses your bonus action, it no longer combines with Quickened Spell or other bonus-action spells on the same turn, and you can smite only once per turn. Paladin's Smite (paladin 2) keeps it prepared and gives one free cast per long rest.</li>
@@ -161,7 +176,7 @@
     </ul>
   </section>
 
-  <section class="card notes" aria-labelledby="n14H">
+  <section class="card notes" data-spot aria-labelledby="n14H">
     <h2 id="n14H">Rules notes</h2>
     <ul>
       <li><b>Prerequisites.</b> To multiclass you need the scores for both the class you are leaving and the one you are entering: Barbarian Str 13; Fighter Str 13 or Dex 13; Rogue Dex 13; Monk and Ranger Dex 13 and Wis 13; Bard, Paladin (also Str 13), Sorcerer and Warlock Cha 13; Cleric and Druid Wis 13; Wizard and Artificer Int 13. The same in 2014 and 2024.</li>
@@ -246,8 +261,10 @@
 <script src="engine.js?v=dev"></script>
 <script src="ddb.js?v=dev"></script>
 <script src="character.js?v=dev"></script>
+<script src="chart.js?v=dev"></script>
 <script src="app.js?v=dev"></script>
 <script src="theme.js?v=dev"></script>
 <script src="version.js?v=dev"></script>
+<script src="motion.js?v=dev" defer></script><script src="ui.js?v=dev" defer></script>
 </body>
 </html>

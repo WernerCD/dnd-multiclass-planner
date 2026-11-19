@@ -38,6 +38,7 @@ The repo and site are public, so no book text is reproduced. Every feature and s
 | `site/changes.html` | Change log |
 | `site/404.html` | Page-not-found page (absolute links; Pages serves it at any missing path) |
 | `site/character.js` | Shared characters across the D&D Toolbox sites (header switcher, `dnd.characters`) |
+| `site/motion.js`, `site/ui.js`, `site/chart.js` | Shared D&D Toolbox v1.8: Motion (motion.dev, MIT, vendored), reveal/spotlight/enter/pop/count helpers, and the step charts in the "build by level" card |
 | `site/version.js` | Shared update notice (offers a reload when a newer build is live) |
 | `tools/fixtures/ddb-sample.json` | Made-up D&D Beyond character used by the import checks |
 | `tools/check.js` | Spot checks of the slot math against the multiclass spellcaster table, the D&D Beyond import and the character conversion |
