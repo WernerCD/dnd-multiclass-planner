@@ -125,6 +125,9 @@
   var C = window.DndChar || null, REPO = 'dnd-multiclass-planner', writing = false;
   var pushTimer = null, lastKey = null, conflict = false, cleanKey = '', charHtml = null, pendingShare = null;
   function quietly(fn) { writing = true; try { return fn(); } finally { writing = false; } }
+  // this site's links entry: { q: the build query, impAt: the import (ch.imp.at) last offered }; old records hold the query string
+  function linkQ(ch) { var v = ch && ch.links && ch.links[REPO]; return typeof v === 'string' ? v : v && v.q || null; }
+  function linkImpAt(ch) { var v = ch && ch.links && ch.links[REPO]; return v && typeof v === 'object' ? v.impAt || null : null; }
   // the shared fields the planner reads; a change to anything else (updated, other sites' links) is ignored
   function fieldsKey(ch) {
     return JSON.stringify([ch.name, ch.ed, ch.classes.map(function (c) { return [c.cls, c.lvl, c.sub || null, c.subName || null]; }), ch.ab]);
@@ -146,7 +149,7 @@
       var oth = state.other.map(function (o) { return { cls: o.cls, lvl: o.lvl, sub: o.sub, subName: o.subName }; });
       classes = state.otherFirst ? oth.concat(mine) : mine.concat(oth);
     }
-    var links = {}; links[REPO] = toQuery(state);
+    var links = {}; links[REPO] = { q: toQuery(state) }; if (linkImpAt(old)) links[REPO].impAt = linkImpAt(old);
     return { id: old ? old.id : undefined, name: (state.name || '').trim() || (old && old.name) || 'My build', ed: state.ed,
       classes: classes, ab: state.ab.slice(), links: links };
   }
@@ -162,7 +165,7 @@
     var old = C.get(state.charId);
     if (!old) { delete state.charId; renderChar(); return; } // deleted elsewhere: drop the link quietly
     var rec = charRecord(old);
-    if (fieldsKey(old) !== fieldsKey(rec) || (old.links || {})[REPO] !== rec.links[REPO]) {
+    if (fieldsKey(old) !== fieldsKey(rec) || JSON.stringify((old.links || {})[REPO] || null) !== JSON.stringify(rec.links[REPO])) {
       var m = quietly(function () { return C.save(rec, REPO); });
       lastKey = fieldsKey(m || rec);
     } else lastKey = fieldsKey(old);
@@ -172,7 +175,15 @@
   function shareBuild(id) {
     if (C && C.setShare) quietly(function () { C.setShare(id, REPO, toQuery(state)); });
     // the read-only summary for the hub's Character Sheet and Party pages (no-op when unchanged)
-    if (C && C.setSheet) quietly(function () { C.setSheet(id, REPO, E.sheet(D, Object.assign({}, state, { show: totalLevel(state) }))); });
+    if (C && C.setSheet) quietly(function () {
+      var ch = C.get(id), im = ch && ch.imp, plan = totalLevel(state), opts = {};
+      // the character's real level: from its import when there is one, otherwise the "At level" slider
+      var impL = im && Array.isArray(im.classes) ? impLevel(im) : 0;
+      if (impL && impL < plan) { opts.nowLvl = impL; opts.nowSrc = 'import'; }
+      else if (!impL && state.show < plan) { opts.nowLvl = state.show; opts.nowSrc = 'at'; }
+      if (im && im.skills && (im.skills.prof || im.skills.exp)) opts.skills = { prof: im.skills.prof || [], exp: im.skills.exp || [] };
+      C.setSheet(id, REPO, E.sheet(D, state, opts));
+    });
   }
   /* A share link that was accepted brings the sender's build in the character's inbox. Load it as the linked build
      when this browser has none for that character (or the same one) and nothing unsaved would be lost; otherwise ask. */
@@ -182,7 +193,7 @@
     if (typeof q !== 'string' || !q) return false;
     var s = stateFromChar(ch, q.charAt(0) === '?' ? q : '?' + q);
     if (!s) return false;
-    var linkedHere = state.charId === ch.id, link = ch.links && ch.links[REPO];
+    var linkedHere = state.charId === ch.id, link = linkQ(ch);
     var own = linkedHere ? state : link ? fromQuery(link) : null;
     if (linkedHere && sameBuild(s, state)) return true; // already showing it
     var unsaved = linkedHere ? !!(pushTimer || conflict) : isDirty();
@@ -196,7 +207,7 @@
     // the planner's own link holds the full build (level order, pact boon); the shared record wins where it differs
     var b = E.buildFromChar(D, ch);
     if (!b.levels.length) return null;
-    var link = linkOverride || (ch.links && ch.links[REPO]), s = link ? fromQuery(link) : null;
+    var link = linkOverride || linkQ(ch), s = link ? fromQuery(link) : null;
     if (!s || s.ed !== b.ed || !E.sameClasses(E.charClasses(D, s), E.charClasses(D, b))) s = normalize(b);
     else { s.sub = b.sub; s.otherSub = b.otherSub; s.ab = b.ab; s.other = b.other; s.otherFirst = b.otherFirst; s = normalize(s); }
     s.name = ch.name; s.charId = ch.id;
@@ -224,9 +235,40 @@
     var oth = s.other.map(function (o) { return otherName(o.cls) + ' ' + o.lvl; });
     return (s.otherFirst ? oth.concat(mine) : mine.concat(oth)).join(' / ');
   }
+  // a character imported on the hub (ch.imp, STYLE.md 6g) that this site hasn't offered yet
+  var IMP_SRC = { ddb: 'D&D Beyond', foundry: 'Foundry VTT', fc5: 'Fight Club 5' };
+  function impOffer() {
+    if (!C) return null;
+    var ch = (state.charId && C.get(state.charId)) || C.active(), im = ch && ch.imp;
+    if (!im || !im.at || !Array.isArray(im.classes) || !im.classes.length) return null;
+    var seen = linkImpAt(ch);
+    return !seen || String(im.at) > String(seen) ? ch : null;
+  }
+  function impLevel(im) { return (im.classes || []).reduce(function (t, c) { return t + (parseInt(c.lvl, 10) || 0); }, 0); }
+  // remember that this import was offered, in our own links entry only
+  function markImp(ch) {
+    var v = ch.links && ch.links[REPO], next = { q: typeof v === 'string' ? v : v && v.q || null, impAt: ch.imp.at };
+    if (!next.q) delete next.q;
+    quietly(function () { C.setLink(ch.id, REPO, next); });
+  }
+  function buildFromImp(ch) {
+    var im = ch.imp;
+    var b = E.buildFromChar(D, { ed: im.ed || ch.ed, ab: Array.isArray(im.ab) && im.ab.length === 6 ? im.ab : ch.ab, name: im.name || ch.name,
+      classes: im.classes.map(function (c) { return { cls: String(c.cls || '').toLowerCase(), lvl: parseInt(c.lvl, 10) || 1, sub: null, subName: c.subName || null }; }) });
+    return b.levels.length ? normalize(b) : null;
+  }
   function charBarHtml() {
     if (!C) return '';
     var ch = state.charId ? C.get(state.charId) : null, act = C.active();
+    var io = !pendingShare && !conflict && impOffer();
+    if (io) {
+      var im = io.imp, srcName = IMP_SRC[im.src] || 'another site';
+      var cls = im.classes.map(function (c) { return (c.cls || '').charAt(0).toUpperCase() + String(c.cls || '').slice(1) + ' ' + c.lvl; }).join(' / ');
+      return '<span class="char-txt"><b>' + esc(io.name) + '</b> was imported from ' + esc(srcName) + ' (' + esc(cls) + ', level ' + impLevel(im) + '). ' +
+        (state.charId === io.id ? 'Building from it replaces the build here; the level order is a guess you can change.' : 'Build from it to plan ahead; the level order is a guess you can change.') + '</span>' +
+        '<span class="char-acts"><button type="button" class="btn btn-accent" data-imp="build">Build from the character imported from ' + esc(srcName) + '</button>' +
+        '<button type="button" class="btn" data-imp="skip">Not now</button></span>';
+    }
     var ps = pendingShare && C.get(pendingShare.id);
     if (ps) {
       return '<span class="char-txt"><b>' + esc(ps.name) + '</b> was shared with you with its own Multiclass Planner build (' + esc(splitText(pendingShare.s)) + '), which differs from ' +
@@ -636,6 +678,21 @@
       var th = C && C.get(state.charId), ts = th && stateFromChar(th);
       if (ts) { applyChar(th, ts); render(); toast('Loaded the latest version of "' + th.name + '".'); }
       else { conflict = false; delete state.charId; render(); }
+      return;
+    }
+    if (t.dataset.imp) {
+      var ich = impOffer(); if (!ich) { renderChar(); return; }
+      if (t.dataset.imp === 'skip') { markImp(ich); renderChar(); return; }
+      var ns = buildFromImp(ich);
+      if (!ns) { markImp(ich); toast('The imported character has no classes the planner can use.'); renderChar(); return; }
+      // never replace a saved build silently: ask when this character already has a different one here
+      var had = state.charId === ich.id ? state : (linkQ(ich) ? fromQuery(linkQ(ich)) : null);
+      if (had && !sameBuild(had, ns) && !confirm('Replace the build for ' + ich.name + ' with one made from the import?')) return;
+      if (state.charId && state.charId !== ich.id) pushNow();
+      markImp(ich);
+      ns.charId = ich.id; ns.name = ich.name;
+      applyChar(C.get(ich.id), ns); quietly(function () { C.setActive(ich.id); }); render(); pushNow();
+      toast('Built ' + ich.name + ' from the import. Check the level order under Class levels.');
       return;
     }
     if (t.dataset.share) {

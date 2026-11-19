@@ -437,7 +437,8 @@
     });
     function add(list, v) { if (list.indexOf(v) < 0) list.push(v); }
   }
-  function sheet(D, build) {
+  function sheet(D, build, opts) {
+    opts = opts || {};
     var r = compute(D, build), last = r.rows[r.rows.length - 1], ed = r.ed;
     var dice = {}, order = [];
     r.rows.forEach(function (row) {
@@ -449,8 +450,9 @@
     var slots = []; for (var i = 0; i < 9; i++) slots.push(last.slots[i] || 0);
     var seen = {}, dc = [];
     (last.dcs || []).forEach(function (d) { if (!seen[d.abil]) { seen[d.abil] = 1; dc.push({ abil: d.abil, dc: d.dc, atk: d.atk }); } });
-    // resources at full level, with how they come back
-    var res = [], c = last.counts, rs = last.res || {}, ex = {};
+    // resources at a level, with how they come back
+    function resAt(row) {
+    var res = [], c = row.counts, rs = row.res || {}, ex = {};
     (rs.extra || []).forEach(function (x) { ex[x.key] = x.v; });
     var num = function (v) { return typeof v === 'number' ? v : null; };
     var restShortLong = ed === '2014' ? 'short' : 'long';
@@ -471,6 +473,9 @@
     if (ex.sneak) res.push({ name: 'Sneak Attack', max: 1, per: 'turn', note: ex.sneak });
     if (ex.infuse) res.push({ name: 'Infused items', max: parseInt(ex.infuse, 10), per: 'long', note: 'infusions known ' + /\((\d+)\)/.exec(ex.infuse)[1] + '; change on a long rest' });
     res.forEach(function (x) { if (x.note === undefined) delete x.note; if (x.max === null) delete x.max; });
+    return res;
+    }
+    var res = resAt(last);
     // ASI / feat slots (the planner doesn't record which feat), and feature names
     var feats = [], features = [];
     r.rows.forEach(function (row) {
@@ -497,6 +502,15 @@
     out.features = features;
     var AO = ['light', 'medium', 'heavy', 'shields'];
     pr.armor.sort(function (x, y) { return AO.indexOf(x) - AO.indexOf(y); });
+    // numbers at the character's current level, when the plan runs ahead of it
+    var nl = parseInt(opts.nowLvl, 10);
+    if (nl >= 1 && nl < r.rows.length) {
+      var nr = r.rows[nl - 1], ns = []; for (var j = 0; j < 9; j++) ns.push(nr.slots[j] || 0);
+      out.now = { lvl: nl, src: opts.nowSrc || 'at', hp: nr.hp, slots: ns };
+      if (nr.pact) out.now.pact = { n: nr.pact.count, lvl: nr.pact.level };
+      var nres = resAt(nr); if (nres.length) out.now.res = nres;
+    }
+    if (opts.skills) out.skills = opts.skills;
     out.prof = { armor: pr.armor.join(', '), weapons: pr.weapons.join(', '), tools: pr.tools.join(', ') };
     // stay under the 6000-character limit: drop generic subclass placeholders first, then the oldest features
     var size = function () { return JSON.stringify(out).length; };
