@@ -474,6 +474,16 @@
     return (state.otherFirst ? oth.concat(mine) : mine.concat(oth)).join(' / ');
   }
 
+  function hitDiceHtml(counts) {
+    var con = Math.floor((state.ab[2] - 10) / 2), by = {};
+    D.CLASS_ORDER.forEach(function (id) { if (counts[id]) by[D.CLASSES[id].hitDie] = (by[D.CLASSES[id].hitDie] || 0) + counts[id]; });
+    var dice = Object.keys(by).map(Number).sort(function (a, b) { return b - a; });
+    if (!dice.length) return '<span class="none">none</span>';
+    return dice.map(function (d) {
+      var expr = '1d' + d + (con ? (con > 0 ? '+' : '') + con : '');
+      return '<span class="hd-part">' + by[d] + '<span data-roll="' + expr + '" data-roll-label="Hit die (short rest)">d' + d + '</span></span>';
+    }).join(' + ');
+  }
   function slotsHtml(slots) {
     if (!slots.length) return '<span class="none">none</span>';
     return '<span class="slots">' + slots.map(function (n, i) { return '<span class="sl"><i>' + ORD[i + 1] + '</i><b>' + n + '</b></span>'; }).join('') + '</span>';
@@ -552,7 +562,7 @@
     var names = ids.slice(0, 12).map(function (id) {
       return String(id).replace(/^[^_]*_/, '').split('-').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
     });
-    return '<div class="small"><span class="muted">Taken in <a href="' + esc(FEATS + '?ed=' + state.ed + '&char=' + encodeURIComponent(state.charId) + '&show=taken') + '">Feats &amp; Origins</a>:</span> ' + esc(names.join(', ')) + '</div>';
+    return '<div class="small"><span class="muted">Taken in <a href="' + esc(FEATS + '?ed=' + state.ed + '&char=' + encodeURIComponent(state.charId) + '&show=taken') + '">Feats &amp; Origins</a>:</span> ' + names.map(function (n) { return '<span data-link="feat">' + esc(n) + '</span>'; }).join(', ') + '</div>';
   }
   function renderSummary(r) {
     var row = r.rows[state.show - 1];
@@ -565,6 +575,7 @@
       ['Split', '<span class="split-v">' + splitHtml(row.counts, r, state.show) + '</span>', 'wide'],
       ['Proficiency', sgn(row.prof)],
       ['Hit points', row.hp + ' <small class="muted">avg</small>'],
+      ['Hit dice', hitDiceHtml(row.counts)],
       ['Spell DC / attack', row.dcs && row.dcs.length
         ? dcHtml(row.dcs) : '<span class="none">none</span>', row.dcs && row.dcs.length > 1 ? 'wide' : ''],
       ['Attacks', row.attacks + (row.attacks > 1 ? ' (Extra Attack)' : '')],
@@ -600,13 +611,14 @@
 
   function renderTable(r) {
     $('tbody').innerHTML = r.rows.map(function (row) {
+      var ctx = row.locked ? row.otherName + ' ' + row.n : D.CLASSES[row.cls].name + ' ' + row.n;
       var tag = row.locked ? '<span class="tag c-other">' + esc(row.otherName) + ' ' + row.n + '</span>' : '<span class="tag c-' + row.cls + '">' + esc(D.CLASSES[row.cls].name) + ' ' + row.n + '</span>';
       var feats = row.feats.map(function (f) {
-        return '<p class="feat ' + f.kind + '"><b>' + esc(f.name) + '.</b> ' + esc(f.text) + (f.src ? ' <span class="src">(' + esc(f.src) + ')</span>' : '') +
+        return '<p class="feat ' + f.kind + '" data-roll-entry><b>' + esc(f.name) + '.</b> ' + esc(f.text) + (f.src ? ' <span class="src">(' + esc(f.src) + ')</span>' : '') +
           (f.kind === 'asi' ? ' <a class="feat-link" href="' + esc(featsUrl(row.L, /Epic Boon/.test(f.name))) + '">' + (/Epic Boon/.test(f.name) ? 'Browse Epic Boons' : 'Browse feats') + '</a>' : '') + '</p>';
       }).join('') + row.notes.map(function (n) { return '<p class="rnote">' + esc(n) + '</p>'; }).join('');
       var cls = (row.L > state.show ? 'future' : row.L === state.show ? 'cur' : '') + (row.locked ? ' locked' : '');
-      return '<tr class="' + cls + '">' +
+      return '<tr class="' + cls + '" data-roll-ctx="' + esc(ctx) + '">' +
         '<td class="lvn">' + row.L + '<small>Prof ' + sgn(row.prof) + '</small></td>' +
         '<td class="c-cls">' + tag + '</td>' +
         '<td>' + (feats || '<span class="none">No new features</span>') + '</td>' +

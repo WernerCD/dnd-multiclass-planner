@@ -126,7 +126,7 @@
       <h2 id="sumH">At level <output id="showOut">20</output></h2>
       <input type="range" id="show" min="1" max="20" value="20" aria-label="Show the build at character level">
     </div>
-    <div class="stats" id="stats"></div>
+    <div class="stats" id="stats" data-links></div>
   </section>
 
   <section class="card" data-spot aria-labelledby="chH">
@@ -147,11 +147,11 @@
   <div class="grid2">
     <section class="card" data-spot aria-labelledby="msH">
       <h2 id="msH">Milestones</h2>
-      <ol class="ms" id="milestones"></ol>
+      <ol class="ms" id="milestones" data-dice data-links></ol>
     </section>
     <section class="card" data-spot aria-labelledby="cbH">
       <h2 id="cbH">How this build combines</h2>
-      <ul class="cb" id="combine"></ul>
+      <ul class="cb" id="combine" data-dice data-links></ul>
     </section>
   </div>
 
@@ -161,12 +161,12 @@
     <div class="tbl-wrap">
       <table class="lvl-table" id="table">
         <thead><tr><th>Lvl</th><th>Class</th><th>Features</th><th>Spell slots</th><th>Pact Magic</th><th>Spells</th><th>Resources</th><th>HP</th></tr></thead>
-        <tbody id="tbody"></tbody>
+        <tbody id="tbody" data-dice data-links></tbody>
       </table>
     </div>
   </section>
 
-  <section class="card notes" data-spot id="notes2024" aria-labelledby="n24H">
+  <section class="card notes" data-spot data-dice data-links id="notes2024" aria-labelledby="n24H">
     <h2 id="n24H">What changed in 2024</h2>
     <ul>
       <li><b>Divine Smite is a spell.</b> It is a 1st-level paladin spell cast as a bonus action right after you hit with a melee weapon or unarmed strike. Because it uses your bonus action, it no longer combines with Quickened Spell or other bonus-action spells on the same turn, and you can smite only once per turn. Paladin's Smite (paladin 2) keeps it prepared and gives one free cast per long rest.</li>
@@ -181,7 +181,7 @@
     </ul>
   </section>
 
-  <section class="card notes" data-spot aria-labelledby="n14H">
+  <section class="card notes" data-spot data-dice data-links aria-labelledby="n14H">
     <h2 id="n14H">Rules notes</h2>
     <ul>
       <li><b>Prerequisites.</b> To multiclass you need the scores for both the class you are leaving and the one you are entering: Barbarian Str 13; Fighter Str 13 or Dex 13; Rogue Dex 13; Monk and Ranger Dex 13 and Wis 13; Bard, Paladin (also Str 13), Sorcerer and Warlock Cha 13; Cleric and Druid Wis 13; Wizard and Artificer Int 13. The same in 2014 and 2024.</li>
@@ -276,6 +276,8 @@
 <script src="nav.js?v=dev"></script>
 <script src="version.js?v=dev"></script>
 <script src="offline.js?v=dev"></script>
+<script src="dice.js?v=dev"></script>
+<script src="links.js?v=dev"></script>
 <script src="motion.js?v=dev" defer></script><script src="ui.js?v=dev" defer></script>
 </body>
 </html>
