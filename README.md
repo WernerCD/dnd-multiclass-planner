@@ -42,13 +42,14 @@ The repo and site are public, so no book text is reproduced. Every feature and s
 | `site/version.js` | Shared update notice (offers a reload when a newer build is live) |
 | `tools/fixtures/ddb-sample.json` | Made-up D&D Beyond character used by the import checks |
 | `tools/check.js` | Spot checks of the slot math against the multiclass spellcaster table, the D&D Beyond import and the character conversion |
+| `tools/smoke_test.py`, `tests/site_test.py` | Shared Playwright smoke tests (STYLE 7) and the planner's own browser checks |
 | `tools/check_site.py` | Shared toolbox smoke check (pages, head tags, header/footer, local links) |
 
 ## Run locally
 ```bash
 python -m http.server 8771 --directory site
 ```
-Checks (CI runs the same before every deploy): `python tools/check_site.py` and `node tools/check.js`. Every push to `main` deploys to GitHub Pages via `.github/workflows/pages.yml`, which stamps asset links (`?v=dev`) with the commit id.
+Checks (CI runs the same before every deploy): `python tools/check_site.py`, `node tools/check.js` and the browser smoke tests `python tools/smoke_test.py` (shared suite plus `tests/site_test.py`; needs `pip install playwright` and `python -m playwright install chromium`). Every push to `main` deploys to GitHub Pages via `.github/workflows/pages.yml`, which stamps asset links (`?v=dev`) with the commit id.
 
 ## Credits and license
 - Code: MIT, see [LICENSE](LICENSE).
