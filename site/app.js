@@ -296,7 +296,7 @@
         (usable ? 'Load it, or save this build as a new character.' : 'It has no Paladin, Warlock or Sorcerer levels; you can save this build as a new character.') + '</span>' +
         '<span class="char-acts">' + (usable ? '<button type="button" class="btn" id="charFollow">Load ' + esc(act.name) + '</button>' : '') + save + '</span>';
     }
-    return '<span class="char-txt">Save this build as a character to use it on the other D&amp;D Toolbox sites: the Spell Planner, Item Finder and more.</span>' +
+    return '<span class="char-txt">This build isn\'t one of your characters yet. <b>Save as character</b> adds it to your D&amp;D Toolbox characters (Characters, Character Sheet, Party, Spell Planner and the rest); <b>Save</b> above only keeps it in this planner.</span>' +
       '<span class="char-acts">' + save + '</span>';
   }
   function renderChar() {
@@ -655,7 +655,7 @@
       var s = savedList(); // re-read, so another tab's saves are kept
       if (has(s, name) && !confirm('Replace the saved build "' + name + '"?')) return;
       state.name = name; s[name] = state;
-      if (store.set('mcp.builds', s)) { toast('Saved "' + name + '" in this browser.'); cleanKey = toQuery(state); }
+      if (store.set('mcp.builds', s)) { toast('Saved "' + name + '" in this planner.' + (state.charId ? '' : ' To add it to your characters, use Save as character.')); cleanKey = toQuery(state); }
       else toast('Could not save: browser storage is unavailable.');
       renderSaved(name); render(); return;
     }
