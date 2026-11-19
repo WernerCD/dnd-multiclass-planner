@@ -614,7 +614,7 @@
       var ctx = row.locked ? row.otherName + ' ' + row.n : D.CLASSES[row.cls].name + ' ' + row.n;
       var tag = row.locked ? '<span class="tag c-other">' + esc(row.otherName) + ' ' + row.n + '</span>' : '<span class="tag c-' + row.cls + '">' + esc(D.CLASSES[row.cls].name) + ' ' + row.n + '</span>';
       var feats = row.feats.map(function (f) {
-        return '<p class="feat ' + f.kind + '" data-roll-entry><b>' + esc(f.name) + '.</b> ' + esc(f.text) + (f.src ? ' <span class="src">(' + esc(f.src) + ')</span>' : '') +
+        return '<p class="feat ' + f.kind + '" data-roll-entry><b data-nolink>' + esc(f.name) + '.</b> ' + esc(f.text) + (f.src ? ' <span class="src">(' + esc(f.src) + ')</span>' : '') +
           (f.kind === 'asi' ? ' <a class="feat-link" href="' + esc(featsUrl(row.L, /Epic Boon/.test(f.name))) + '">' + (/Epic Boon/.test(f.name) ? 'Browse Epic Boons' : 'Browse feats') + '</a>' : '') + '</p>';
       }).join('') + row.notes.map(function (n) { return '<p class="rnote">' + esc(n) + '</p>'; }).join('');
       var cls = (row.L > state.show ? 'future' : row.L === state.show ? 'cur' : '') + (row.locked ? ' locked' : '');
