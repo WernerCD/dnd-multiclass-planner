@@ -491,6 +491,25 @@
       xLabel: 'Character level', yLabel: 'HP', title: 'Average hit points by character level' };
     if (hpPlot) hpPlot.update(ho); else hpPlot = DndPlot.line($('hpChart'), ho);
   }
+  // Feats & Origins (dnd-feats): what the character can take at an ASI level, and the feats taken there (read-only)
+  var FEATS = 'https://wernercd.github.io/dnd-feats/';
+  function featsUrl(L, boon) {
+    var p = new URLSearchParams();
+    p.set('ed', state.ed);
+    if (state.charId) { p.set('char', state.charId); p.set('at', L); p.set('show', 'ok'); }
+    p.set('cat', boon ? 'Epic Boon' : state.ed === '2014' ? 'General|Racial' : 'General');
+    return FEATS + '?' + p.toString();
+  }
+  function takenHtml() {
+    var ch = C && state.charId ? C.get(state.charId) : null, df = ch && ch.links && ch.links['dnd-feats'];
+    var ids = df && Array.isArray(df.taken) ? df.taken : [];
+    if (!ids.length) return '';
+    // entry ids look like "xphb_great-weapon-master": the part after the book code, title-cased
+    var names = ids.slice(0, 12).map(function (id) {
+      return String(id).replace(/^[^_]*_/, '').split('-').map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }).join(' ');
+    });
+    return '<div class="small"><span class="muted">Taken in <a href="' + esc(FEATS + '?ed=' + state.ed + '&char=' + encodeURIComponent(state.charId) + '&show=taken') + '">Feats &amp; Origins</a>:</span> ' + esc(names.join(', ')) + '</div>';
+  }
   function renderSummary(r) {
     var row = r.rows[state.show - 1];
     $('showOut').textContent = state.show;
@@ -508,7 +527,7 @@
       ['Caster level', row.casterLevel || '0'],
       ['Spell slots', slotsHtml(row.slots), 'wide'],
       ['Pact Magic', row.pact ? pactHtml(row.pact) : '<span class="none">none</span>'],
-      ['ASIs / feats', asis.length + (asis.length ? ' <small class="muted">(lvl ' + asis.join(', ') + ')</small>' : '')],
+      ['ASIs / feats', asis.length + (asis.length ? ' <small class="muted">(lvl ' + asis.join(', ') + ')</small>' : '') + takenHtml()],
       ['Saves', esc(r.saves)]
     ];
     var resB = resHtml(row.res);
@@ -539,7 +558,8 @@
     $('tbody').innerHTML = r.rows.map(function (row) {
       var tag = row.locked ? '<span class="tag c-other">' + esc(row.otherName) + ' ' + row.n + '</span>' : '<span class="tag c-' + row.cls + '">' + esc(D.CLASSES[row.cls].name) + ' ' + row.n + '</span>';
       var feats = row.feats.map(function (f) {
-        return '<p class="feat ' + f.kind + '"><b>' + esc(f.name) + '.</b> ' + esc(f.text) + (f.src ? ' <span class="src">(' + esc(f.src) + ')</span>' : '') + '</p>';
+        return '<p class="feat ' + f.kind + '"><b>' + esc(f.name) + '.</b> ' + esc(f.text) + (f.src ? ' <span class="src">(' + esc(f.src) + ')</span>' : '') +
+          (f.kind === 'asi' ? ' <a class="feat-link" href="' + esc(featsUrl(row.L, /Epic Boon/.test(f.name))) + '">' + (/Epic Boon/.test(f.name) ? 'Browse Epic Boons' : 'Browse feats') + '</a>' : '') + '</p>';
       }).join('') + row.notes.map(function (n) { return '<p class="rnote">' + esc(n) + '</p>'; }).join('');
       var cls = (row.L > state.show ? 'future' : row.L === state.show ? 'cur' : '') + (row.locked ? ' locked' : '');
       return '<tr class="' + cls + '">' +
@@ -781,7 +801,7 @@
       return;
     }
     if (active.id === state.charId) {
-      if (fieldsKey(active) === lastKey) { renderChar(); return; } // only `updated` or another site's link changed
+      if (fieldsKey(active) === lastKey) { render(); return; } // only `updated` or another site's link changed (re-render: feats taken in Feats & Origins show in the summary)
       if (pushTimer || conflict) { clearTimeout(pushTimer); pushTimer = null; conflict = true; renderChar(); return; } // unsaved edits here: ask
       var s = stateFromChar(active);
       if (!s) { delete state.charId; render(); toast(active.name + ' no longer has Paladin, Warlock or Sorcerer levels, so the build here was unlinked.'); return; }
