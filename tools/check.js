@@ -241,6 +241,7 @@ eq('sheet: stays under 6000 characters', JSON.stringify(big).length < 6000, true
 // ---------- sheet: numbers now (current level) and skills ----------
 var shn = E.sheet(D, { ed: '2014', levels: E.decodeLevels(D, 'BBBDDDDDDDDDDDDDDDDD'), ab: [15, 12, 14, 8, 14, 10], sub: { barbarian: 'totem-warrior', druid: 'moon' } }, { nowLvl: 7, nowSrc: 'import', skills: { prof: ['perception'], exp: [] } });
 eq('sheet now: level 7 of a level-20 plan (HP, slots, Wild Shape CR at that level)', [shn.lvl, shn.now.lvl, shn.now.src, shn.now.hp, shn.now.slots.slice(0, 3), shn.now.res[1].note], [20, 7, 'import', 60, [4, 3, 0], 'beast CR up to 1']);
+eq('sheet now: hit dice and classes at the current level', [shn.now.hd, shn.now.classes], ['3d12+4d8', [{ cls: 'barbarian', lvl: 3 }, { cls: 'druid', lvl: 4 }]]);
 eq('sheet now: skills passed through', shn.skills, { prof: ['perception'], exp: [] });
 var shf = E.sheet(D, { ed: '2014', levels: E.decodeLevels(D, 'BBBDD'), ab: [15, 12, 14, 8, 14, 10], sub: {} }, { nowLvl: 5 });
 eq('sheet now: left out when the character is already at the plan level', shf.now, undefined);

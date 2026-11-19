@@ -440,12 +440,21 @@
   function sheet(D, build, opts) {
     opts = opts || {};
     var r = compute(D, build), last = r.rows[r.rows.length - 1], ed = r.ed;
-    var dice = {}, order = [];
-    r.rows.forEach(function (row) {
-      var hd = row.locked ? ((D.OTHER_CLASSES[row.other] || {}).hitDie || 8) : D.CLASSES[row.cls].hitDie;
-      if (!dice[hd]) { dice[hd] = 0; order.push(hd); } dice[hd]++;
-    });
-    order.sort(function (a, b) { return b - a; });
+    // hit dice ("5d10+2d8", largest first) and classes in first-taken order, over the first n levels
+    function hdOf(rows) {
+      var dice = {}, order = [];
+      rows.forEach(function (row) {
+        var hd = row.locked ? ((D.OTHER_CLASSES[row.other] || {}).hitDie || 8) : D.CLASSES[row.cls].hitDie;
+        if (!dice[hd]) { dice[hd] = 0; order.push(hd); } dice[hd]++;
+      });
+      order.sort(function (a, b) { return b - a; });
+      return order.map(function (d) { return dice[d] + 'd' + d; }).join('+');
+    }
+    function classesOf(rows) {
+      var n = {}, order = [];
+      rows.forEach(function (row) { var k = row.locked ? row.other : row.cls; if (!n[k]) { n[k] = 0; order.push(k); } n[k]++; });
+      return order.map(function (k) { return { cls: k, lvl: n[k] }; });
+    }
     var saves = String(r.saves || '').split(/,\s*/).map(function (x) { return SAVE[x.trim().toLowerCase()]; }).filter(Boolean);
     var slots = []; for (var i = 0; i < 9; i++) slots.push(last.slots[i] || 0);
     var seen = {}, dc = [];
@@ -492,7 +501,7 @@
       else profParts(D.CLASSES[row.cls].ed[ed].mcProf, pr);
     });
     if (pr.weapons.indexOf('martial') >= 0) pr.weapons = pr.weapons.filter(function (w) { return w === 'simple' || w === 'martial' || !/^(hand crossbows|longswords|rapiers|shortswords|scimitars)$|^martial weapons with/.test(w); });
-    var out = { v: 1, ed: ed, lvl: r.rows.length, pb: last.prof, hp: last.hp, hd: order.map(function (d) { return dice[d] + 'd' + d; }).join('+'),
+    var out = { v: 1, ed: ed, lvl: r.rows.length, pb: last.prof, hp: last.hp, hd: hdOf(r.rows),
       saves: saves, ab: (build.ab || []).map(Number), slots: slots };
     if (last.pact) out.pact = { n: last.pact.count, lvl: last.pact.level };
     if (dc.length) out.dc = dc;
@@ -506,7 +515,7 @@
     var nl = parseInt(opts.nowLvl, 10);
     if (nl >= 1 && nl < r.rows.length) {
       var nr = r.rows[nl - 1], ns = []; for (var j = 0; j < 9; j++) ns.push(nr.slots[j] || 0);
-      out.now = { lvl: nl, src: opts.nowSrc || 'at', hp: nr.hp, slots: ns };
+      out.now = { lvl: nl, src: opts.nowSrc || 'at', hp: nr.hp, hd: hdOf(r.rows.slice(0, nl)), classes: classesOf(r.rows.slice(0, nl)), slots: ns };
       if (nr.pact) out.now.pact = { n: nr.pact.count, lvl: nr.pact.level };
       var nres = resAt(nr); if (nres.length) out.now.res = nres;
     }
