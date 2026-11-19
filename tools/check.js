@@ -226,5 +226,17 @@ var fpq2 = E.compute(D, { ed: '2014', levels: E.decodeLevels(D, 'FFFPPP'), ab: [
 eq('Fighter with neither Str 13 nor Dex 13 is flagged', fpq2.warnings.some(function (w) { return /Fighter needs Str 13 or Dex 13/.test(w.text); }), true);
 eq('all 13 classes are modelled', [D.CLASS_ORDER.length, Object.keys(D.OTHER_CLASSES).length], [13, 0]);
 
+// ---------- character sheet summary (setSheet) ----------
+var sh = E.sheet(D, { ed: '2014', levels: E.decodeLevels(D, 'PPWWWSSSSSSSSSSSSSSS'), ab: [13, 10, 14, 8, 10, 16], sub: { paladin: 'vengeance', warlock: 'hexblade', sorcerer: 'divine-soul' }, boon: 'blade' });
+eq('sheet: core numbers at full level', [sh.v, sh.ed, sh.lvl, sh.pb, sh.hp, sh.hd, sh.saves.join(','), sh.attacks], [1, '2014', 20, 6, 131, '2d10+3d8+15d6', 'wis,cha', 1]);
+eq('sheet: 9 slot levels, pact slots and one DC per ability', [sh.slots, sh.pact, sh.dc], [[4, 3, 3, 3, 2, 1, 1, 1, 0], { n: 2, lvl: 2 }, [{ abil: 'cha', dc: 17, atk: 9 }]]);
+eq('sheet: resources and ASI slots', [sh.res.map(function (r) { return r.name + ' ' + r.max + '/' + r.per; }), sh.feats.map(function (f) { return f.lvl; })], [['Lay on Hands 10/long', 'Sorcery Points 15/long'], [9, 13, 17]]);
+eq('sheet: proficiencies from the first class plus multiclass sets', sh.prof, { armor: 'light, medium, heavy, shields', weapons: 'simple, martial', tools: '' });
+eq('sheet: feature names only, with class', [sh.features[0], sh.features.every(function (f) { return f.lvl && f.cls && f.name && Object.keys(f).length === 3; })], [{ lvl: 1, cls: 'paladin', name: 'Divine Sense' }, true]);
+var sh2 = E.sheet(D, { ed: '2024', levels: E.decodeLevels(D, 'BBBDDDDDDDDDDDDDDDDD'), ab: [15, 12, 14, 8, 14, 10], sub: { barbarian: 'wild-heart', druid: 'moon' } });
+eq('sheet: Rage and Wild Shape with notes; d12 + d8 hit dice', [sh2.hd, sh2.res.map(function (r) { return r.name + ' ' + r.max + '/' + r.per; }), /CR up to 5/.test(sh2.res[1].note)], ['3d12+17d8', ['Rage 3/long', 'Wild Shape 4/long'], true]);
+var big = E.sheet(D, { ed: '2014', levels: E.decodeLevels(D, 'CCCCCCCCCCCCCCCCCCCC'), ab: [10, 10, 14, 10, 18, 10], sub: { cleric: 'twilight' } });
+eq('sheet: stays under 6000 characters', JSON.stringify(big).length < 6000, true);
+
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);

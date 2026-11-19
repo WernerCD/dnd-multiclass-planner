@@ -423,12 +423,94 @@
     return k(a) === k(b);
   }
 
+  // ---------- character sheet summary (character.js setSheet, STYLE.md 6e) ----------
+  var SAVE = { strength: 'str', dexterity: 'dex', constitution: 'con', intelligence: 'int', wisdom: 'wis', charisma: 'cha' };
+  // split a proficiency text into armor / weapons / tools tokens
+  function profParts(text, out) {
+    String(text || '').replace(/\([^)]*\)/g, '').replace(/\b(light|medium|heavy)(?=,| and)/gi, '$1 armor').split(/,\s*/).forEach(function (t) {
+      t = t.trim().toLowerCase(); if (!t || t === 'none' || /skill/.test(t)) return;
+      if (/armor/.test(t)) { ['light', 'medium', 'heavy'].forEach(function (w) { if (t.indexOf(w) >= 0) add(out.armor, w); }); return; }
+      if (t === 'shields') { add(out.armor, 'shields'); return; }
+      if (/tools|kit|instrument/.test(t)) { add(out.tools, t); return; }
+      if (/^[a-z ]+ weapons$/.test(t)) { t.replace(/ weapons$/, '').split(/ and /).forEach(function (w) { add(out.weapons, w.trim()); }); return; }
+      add(out.weapons, t);
+    });
+    function add(list, v) { if (list.indexOf(v) < 0) list.push(v); }
+  }
+  function sheet(D, build) {
+    var r = compute(D, build), last = r.rows[r.rows.length - 1], ed = r.ed;
+    var dice = {}, order = [];
+    r.rows.forEach(function (row) {
+      var hd = row.locked ? ((D.OTHER_CLASSES[row.other] || {}).hitDie || 8) : D.CLASSES[row.cls].hitDie;
+      if (!dice[hd]) { dice[hd] = 0; order.push(hd); } dice[hd]++;
+    });
+    order.sort(function (a, b) { return b - a; });
+    var saves = String(r.saves || '').split(/,\s*/).map(function (x) { return SAVE[x.trim().toLowerCase()]; }).filter(Boolean);
+    var slots = []; for (var i = 0; i < 9; i++) slots.push(last.slots[i] || 0);
+    var seen = {}, dc = [];
+    (last.dcs || []).forEach(function (d) { if (!seen[d.abil]) { seen[d.abil] = 1; dc.push({ abil: d.abil, dc: d.dc, atk: d.atk }); } });
+    // resources at full level, with how they come back
+    var res = [], c = last.counts, rs = last.res || {}, ex = {};
+    (rs.extra || []).forEach(function (x) { ex[x.key] = x.v; });
+    var num = function (v) { return typeof v === 'number' ? v : null; };
+    var restShortLong = ed === '2014' ? 'short' : 'long';
+    if (rs.layOnHands) res.push({ name: 'Lay on Hands', max: rs.layOnHands, per: 'long', note: 'HP pool' });
+    if (rs.channel) res.push({ name: 'Channel Divinity (Paladin)', max: rs.channel, per: restShortLong, note: ed === '2024' ? 'one back on a short rest' : undefined });
+    if (rs.sorcery) res.push({ name: 'Sorcery Points', max: rs.sorcery, per: 'long' });
+    if (ex.rage != null) res.push({ name: 'Rage', max: num(ex.rage), per: 'long', note: (ex.rage === 'unl.' ? 'unlimited; ' : '') + ex.rageDmg + ' damage' + (ed === '2024' ? '; one back on a short rest' : '') });
+    if (ex.ws) res.push({ name: 'Wild Shape', max: num(ex.ws), per: restShortLong, note: (ex.ws === 'unl.' ? 'unlimited; ' : '') + 'beast CR up to ' + ex.wsCr + (ed === '2024' ? '; one back on a short rest' : '') });
+    if (ex.insp) { var m = /^(\d+) x (d\d+)$/.exec(ex.insp); res.push({ name: 'Bardic Inspiration', max: m ? +m[1] : null, per: c.bard >= 5 ? 'short' : 'long', note: m ? m[2] : ex.insp }); }
+    if (ex.clrCd) res.push({ name: 'Channel Divinity (Cleric)', max: ex.clrCd, per: restShortLong, note: ed === '2024' ? 'one back on a short rest' : undefined });
+    if (ex.recov) res.push({ name: 'Arcane Recovery', max: 1, per: ed === '2014' ? 'day' : 'long', note: 'recover ' + ex.recov.replace(' lvls', '') + ' slot levels on a short rest' });
+    if (ex.mark) res.push({ name: "Hunter's Mark (free)", max: ex.mark, per: 'long' });
+    if (c.fighter && ed === '2014') res.push({ name: 'Second Wind', max: 1, per: 'short' });
+    if (ex.wind) res.push({ name: 'Second Wind', max: ex.wind, per: 'long', note: 'one back on a short rest' });
+    if (ex.surge) res.push({ name: 'Action Surge', max: ex.surge, per: 'short' });
+    if (ex.indom) res.push({ name: 'Indomitable', max: ex.indom, per: 'long' });
+    if (ex.ki) res.push({ name: ed === '2014' ? 'Ki' : 'Focus Points', max: ex.ki, per: 'short', note: 'martial arts ' + ex.ma });
+    if (ex.sneak) res.push({ name: 'Sneak Attack', max: 1, per: 'turn', note: ex.sneak });
+    if (ex.infuse) res.push({ name: 'Infused items', max: parseInt(ex.infuse, 10), per: 'long', note: 'infusions known ' + /\((\d+)\)/.exec(ex.infuse)[1] + '; change on a long rest' });
+    res.forEach(function (x) { if (x.note === undefined) delete x.note; if (x.max === null) delete x.max; });
+    // ASI / feat slots (the planner doesn't record which feat), and feature names
+    var feats = [], features = [];
+    r.rows.forEach(function (row) {
+      row.feats.forEach(function (f) {
+        if (f.kind === 'asi') feats.push({ lvl: row.L, name: /Epic Boon/.test(f.name) ? 'Epic Boon' : 'ASI or feat' });
+        else if (f.kind === 'class' || f.kind === 'sub' || f.kind === 'pick') features.push({ lvl: row.L, cls: row.cls, name: f.name });
+      });
+    });
+    // proficiencies: the first class's starting set plus each later class's multiclass set
+    var pr = { armor: [], weapons: [], tools: [] }, firstSeen = {};
+    r.rows.forEach(function (row, idx) {
+      if (row.locked || firstSeen[row.cls]) return; firstSeen[row.cls] = 1;
+      if (idx === 0) { var sp = D.START_PROF[row.cls] || {}; profParts(sp[ed] || sp['2014'], pr); }
+      else profParts(D.CLASSES[row.cls].ed[ed].mcProf, pr);
+    });
+    if (pr.weapons.indexOf('martial') >= 0) pr.weapons = pr.weapons.filter(function (w) { return w === 'simple' || w === 'martial' || !/^(hand crossbows|longswords|rapiers|shortswords|scimitars)$|^martial weapons with/.test(w); });
+    var out = { v: 1, ed: ed, lvl: r.rows.length, pb: last.prof, hp: last.hp, hd: order.map(function (d) { return dice[d] + 'd' + d; }).join('+'),
+      saves: saves, ab: (build.ab || []).map(Number), slots: slots };
+    if (last.pact) out.pact = { n: last.pact.count, lvl: last.pact.level };
+    if (dc.length) out.dc = dc;
+    out.attacks = last.attacks;
+    if (res.length) out.res = res;
+    out.feats = feats;
+    out.features = features;
+    var AO = ['light', 'medium', 'heavy', 'shields'];
+    pr.armor.sort(function (x, y) { return AO.indexOf(x) - AO.indexOf(y); });
+    out.prof = { armor: pr.armor.join(', '), weapons: pr.weapons.join(', '), tools: pr.tools.join(', ') };
+    // stay under the 6000-character limit: drop generic subclass placeholders first, then the oldest features
+    var size = function () { return JSON.stringify(out).length; };
+    if (size() > 6000) out.features = out.features.filter(function (f) { return f.name !== 'Subclass feature'; });
+    while (size() > 6000 && out.features.length) out.features.shift();
+    return out;
+  }
+
   var API = {
     MC_TABLE: MC_TABLE, ABIL: ABIL, ABIL_NAME: ABIL_NAME, ORD: ORD,
     mod: mod, profBonus: profBonus, casterLevel: casterLevel, slotsForCasterLevel: slotsForCasterLevel,
     pactAt: pactAt, maxSpellLevel: maxSpellLevel, compute: compute, findSub: findSub, castInfo: castInfo,
     encodeLevels: encodeLevels, decodeLevels: decodeLevels,
-    charClasses: charClasses, buildFromChar: buildFromChar, sameClasses: sameClasses, subKey: subKey, otherTotal: otherTotal, sequence: sequence
+    sheet: sheet, charClasses: charClasses, buildFromChar: buildFromChar, sameClasses: sameClasses, subKey: subKey, otherTotal: otherTotal, sequence: sequence
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   else root.PlannerEngine = API;

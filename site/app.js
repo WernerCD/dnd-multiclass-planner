@@ -169,7 +169,11 @@
     shareBuild(old.id);
   }
   // what this character's share links (#dndchar=) carry for the planner: the full build query
-  function shareBuild(id) { if (C && C.setShare) quietly(function () { C.setShare(id, REPO, toQuery(state)); }); }
+  function shareBuild(id) {
+    if (C && C.setShare) quietly(function () { C.setShare(id, REPO, toQuery(state)); });
+    // the read-only summary for the hub's Character Sheet and Party pages (no-op when unchanged)
+    if (C && C.setSheet) quietly(function () { C.setSheet(id, REPO, E.sheet(D, Object.assign({}, state, { show: totalLevel(state) }))); });
+  }
   /* A share link that was accepted brings the sender's build in the character's inbox. Load it as the linked build
      when this browser has none for that character (or the same one) and nothing unsaved would be lost; otherwise ask. */
   function handleInbox(ch) {

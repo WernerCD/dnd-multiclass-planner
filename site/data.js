@@ -487,6 +487,26 @@
   var MORE = root.PLANNER_MORE_LIST || (typeof module !== 'undefined' && module.exports ? [require('./data-classes.js'), require('./data-casters.js'), require('./data-martials.js')] : []);
   MORE.forEach(function (m) { m.ORDER.forEach(function (id) { CLASSES[id] = m.CLASSES[id]; CLASS_ORDER.push(id); }); });
   var MAX_CLASSES = 3; // a build mixes at most this many classes
+  // starting-class proficiencies (armor, weapons, tools), for the character sheet summary; game facts
+  var START_PROF = {
+    barbarian: { '2014': 'Light and medium armor, shields, simple and martial weapons' },
+    bard: { '2014': 'Light armor, simple weapons, hand crossbows, longswords, rapiers, shortswords, three musical instruments',
+            '2024': 'Light armor, simple weapons, three musical instruments' },
+    cleric: { '2014': 'Light and medium armor, shields, simple weapons' },
+    druid: { '2014': 'Light and medium armor, shields, clubs, daggers, darts, javelins, maces, quarterstaffs, scimitars, sickles, slings, spears, herbalism kit',
+             '2024': 'Light armor, shields, simple weapons, herbalism kit' },
+    fighter: { '2014': 'Light, medium and heavy armor, shields, simple and martial weapons' },
+    monk: { '2014': "Simple weapons, shortswords, one artisan's tools or musical instrument",
+            '2024': "Simple weapons, martial weapons with the Light property, one artisan's tools or musical instrument" },
+    paladin: { '2014': 'Light, medium and heavy armor, shields, simple and martial weapons' },
+    ranger: { '2014': 'Light and medium armor, shields, simple and martial weapons' },
+    rogue: { '2014': "Light armor, simple weapons, hand crossbows, longswords, rapiers, shortswords, thieves' tools",
+             '2024': "Light armor, simple weapons, martial weapons with the Finesse or Light property, thieves' tools" },
+    sorcerer: { '2014': 'Daggers, darts, slings, quarterstaffs, light crossbows', '2024': 'Simple weapons' },
+    warlock: { '2014': 'Light armor, simple weapons' },
+    wizard: { '2014': 'Daggers, darts, slings, quarterstaffs, light crossbows', '2024': 'Simple weapons' },
+    artificer: { '2014': "Light and medium armor, shields, simple weapons, thieves' tools, tinker's tools, one artisan's tools" }
+  };
 
   var PACT_BOONS = [
     { id: 'blade', name: 'Pact of the Blade', note: 'Summon a pact weapon; Thirsting Blade and Eldritch Smite build on it.' },
@@ -550,7 +570,7 @@
   var OTHER_CLASSES = {
   };
 
-  var DATA = { CLASSES: CLASSES, CLASS_ORDER: CLASS_ORDER, MAX_CLASSES: MAX_CLASSES, OTHER_CLASSES: OTHER_CLASSES, PACT_BOONS: PACT_BOONS, ED_INFO: ED_INFO, PRESETS: PRESETS, METAMAGIC: METAMAGIC };
+  var DATA = { CLASSES: CLASSES, CLASS_ORDER: CLASS_ORDER, MAX_CLASSES: MAX_CLASSES, START_PROF: START_PROF, OTHER_CLASSES: OTHER_CLASSES, PACT_BOONS: PACT_BOONS, ED_INFO: ED_INFO, PRESETS: PRESETS, METAMAGIC: METAMAGIC };
   if (typeof module !== 'undefined' && module.exports) module.exports = DATA;
   else root.PLANNER_DATA = DATA;
 })(this);
