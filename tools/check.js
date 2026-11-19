@@ -246,5 +246,11 @@ eq('sheet now: skills passed through', shn.skills, { prof: ['perception'], exp: 
 var shf = E.sheet(D, { ed: '2014', levels: E.decodeLevels(D, 'BBBDD'), ab: [15, 12, 14, 8, 14, 10], sub: {} }, { nowLvl: 5 });
 eq('sheet now: left out when the character is already at the plan level', shf.now, undefined);
 
+// ---------- a real hub import record (anonymised Brin Ashvale, 2024 Paladin 5 / Warlock 2) ----------
+var brin = { v: 1, src: 'ddb', at: '2026-11-19T06:09:16.081Z', ed: '2024', name: 'Brin Ashvale', classes: [{ cls: 'paladin', lvl: 5, subName: 'Oath of Devotion' }, { cls: 'warlock', lvl: 2, subName: null }], ab: [18, 10, 15, 8, 10, 16] };
+var bb = E.buildFromChar(D, { ed: brin.ed, ab: brin.ab, name: brin.name, classes: brin.classes.map(function (c) { return { cls: c.cls, lvl: c.lvl, sub: null, subName: c.subName }; }) });
+var br = E.compute(D, bb);
+eq('hub import sample: starting class first, Devotion matched, level 7, paladin saves', [E.encodeLevels(D, bb.levels), bb.sub, br.rows.length, br.saves, br.warnings.length], ['PPPPPWW', { paladin: 'devotion' }, 7, 'Wisdom, Charisma', 0]);
+
 console.log('\n' + passes + ' passed, ' + fails + ' failed');
 process.exit(fails ? 1 : 0);
